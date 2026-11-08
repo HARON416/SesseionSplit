@@ -1,0 +1,2233 @@
+{
+  "source": "https://coolors.co/palettes/popular/black",
+  "reviewedOn": "2026-11-07",
+  "sort": "popular",
+  "search": "black",
+  "reviewedCount": 192,
+  "selected": [
+    {
+      "id": "5ec19c970343b60007fc8990",
+      "name": "Light Steel",
+      "colors": [
+        "#f8f9fa",
+        "#e9ecef",
+        "#dee2e6",
+        "#ced4da",
+        "#adb5bd",
+        "#6c757d",
+        "#495057",
+        "#343a40",
+        "#212529"
+      ],
+      "page": 1,
+      "role": "neutral scale",
+      "reason": "A complete neutral ramp supports readable text, subtle light surfaces, and distinct dark surfaces.",
+      "url": "https://coolors.co/f8f9fa-e9ecef-dee2e6-ced4da-adb5bd-6c757d-495057-343a40-212529"
+    },
+    {
+      "id": "5e9c86ff18a3f413572b1d0b",
+      "name": "Midnight Sky",
+      "colors": [
+        "#222222",
+        "#ffffff",
+        "#1c5d99",
+        "#639fab",
+        "#bbcde5"
+      ],
+      "page": 4,
+      "role": "action and focus colors",
+      "reason": "Deep blue is readable with white in light mode; muted blue stays clear on charcoal in dark mode.",
+      "url": "https://coolors.co/222222-ffffff-1c5d99-639fab-bbcde5"
+    }
+  ],
+  "derivedColors": {
+    "#174d7f": "Darker hover variant of #1c5d99.",
+    "#e4edf5": "Pale blue selection surface for light mode.",
+    "#354d5a": "Muted blue selection surface for dark mode."
+  },
+  "reviewedPages": [
+    {
+      "page": 1,
+      "count": 48,
+      "palettes": [
+        {
+          "id": "5e9c86e818a3f413572ac190",
+          "name": "Black & Gold Elegance",
+          "colors": [
+            "#000000",
+            "#14213d",
+            "#fca311",
+            "#e5e5e5",
+            "#ffffff"
+          ]
+        },
+        {
+          "id": "5e9c870818a3f413572b5452",
+          "name": "Warm Autumn Glow",
+          "colors": [
+            "#003049",
+            "#d62828",
+            "#f77f00",
+            "#fcbf49",
+            "#eae2b7"
+          ]
+        },
+        {
+          "id": "5eb3c9d44d1ea70008090b57",
+          "name": "Fiery Red Sunset",
+          "colors": [
+            "#03071e",
+            "#370617",
+            "#6a040f",
+            "#9d0208",
+            "#d00000",
+            "#dc2f02",
+            "#e85d04",
+            "#f48c06",
+            "#faa307",
+            "#ffba08"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a81b3",
+          "name": "Cool Coastal Vibes",
+          "colors": [
+            "#2b2d42",
+            "#8d99ae",
+            "#edf2f4",
+            "#ef233c",
+            "#d90429"
+          ]
+        },
+        {
+          "id": "5fa6d07bde1390000b71e90f",
+          "name": "Ocean Sunset",
+          "colors": [
+            "#001219",
+            "#005f73",
+            "#0a9396",
+            "#94d2bd",
+            "#e9d8a6",
+            "#ee9b00",
+            "#ca6702",
+            "#bb3e03",
+            "#ae2012",
+            "#9b2226"
+          ]
+        },
+        {
+          "id": "5e9c86fa18a3f413572b11f0",
+          "name": "Watermelon Sorbet",
+          "colors": [
+            "#ef476f",
+            "#ffd166",
+            "#06d6a0",
+            "#118ab2",
+            "#073b4c"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a343f",
+          "name": "Soft Lavender",
+          "colors": [
+            "#22223b",
+            "#4a4e69",
+            "#9a8c98",
+            "#c9ada7",
+            "#f2e9e4"
+          ]
+        },
+        {
+          "id": "5ec19c970343b60007fc8990",
+          "name": "Light Steel",
+          "colors": [
+            "#f8f9fa",
+            "#e9ecef",
+            "#dee2e6",
+            "#ced4da",
+            "#adb5bd",
+            "#6c757d",
+            "#495057",
+            "#343a40",
+            "#212529"
+          ]
+        },
+        {
+          "id": "5fa8281838d7c5000aaa6634",
+          "name": "Autumn Harvest",
+          "colors": [
+            "#ede0d4",
+            "#e6ccb2",
+            "#ddb892",
+            "#b08968",
+            "#7f5539",
+            "#9c6644"
+          ]
+        },
+        {
+          "id": "5ebbca33de43ef0008ddc371",
+          "name": "Fresh Greens",
+          "colors": [
+            "#d8f3dc",
+            "#b7e4c7",
+            "#95d5b2",
+            "#74c69d",
+            "#52b788",
+            "#40916c",
+            "#2d6a4f",
+            "#1b4332",
+            "#081c15"
+          ]
+        },
+        {
+          "id": "60349e75c8f088000adb2ec6",
+          "name": "Golden Twilight",
+          "colors": [
+            "#000814",
+            "#001d3d",
+            "#003566",
+            "#ffc300",
+            "#ffd60a"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b07a3",
+          "name": "Coastal Vibes",
+          "colors": [
+            "#3d5a80",
+            "#98c1d9",
+            "#e0fbfc",
+            "#ee6c4d",
+            "#293241"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7eff",
+          "name": "Deep Sea",
+          "colors": [
+            "#0d1b2a",
+            "#1b263b",
+            "#415a77",
+            "#778da9",
+            "#e0e1dd"
+          ]
+        },
+        {
+          "id": "60a52df28221d5000adc877b",
+          "name": "Warm Neutral Tones",
+          "colors": [
+            "#582f0e",
+            "#7f4f24",
+            "#936639",
+            "#a68a64",
+            "#b6ad90",
+            "#c2c5aa",
+            "#a4ac86",
+            "#656d4a",
+            "#414833",
+            "#333d29"
+          ]
+        },
+        {
+          "id": "5eab3e9d81393300071ddfcc",
+          "name": "Vivid Nightfall",
+          "colors": [
+            "#10002b",
+            "#240046",
+            "#3c096c",
+            "#5a189a",
+            "#7b2cbf",
+            "#9d4edd",
+            "#c77dff",
+            "#e0aaff"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572abcc0",
+          "name": "Monochrome Beach",
+          "colors": [
+            "#353535",
+            "#3c6e71",
+            "#ffffff",
+            "#d9d9d9",
+            "#284b63"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2bb4",
+          "name": "Neutral Elegance",
+          "colors": [
+            "#463f3a",
+            "#8a817c",
+            "#bcb8b1",
+            "#f4f3ee",
+            "#e0afa0"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b0c52",
+          "name": "Rustic Charm",
+          "colors": [
+            "#fffcf2",
+            "#ccc5b9",
+            "#403d39",
+            "#252422",
+            "#eb5e28"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572abca3",
+          "name": "Contrast Pop",
+          "colors": [
+            "#011627",
+            "#fdfffc",
+            "#2ec4b6",
+            "#e71d36",
+            "#ff9f1c"
+          ]
+        },
+        {
+          "id": "5f468e03e84f0c000a754a66",
+          "name": "Classic Red Palette",
+          "colors": [
+            "#0b090a",
+            "#161a1d",
+            "#660708",
+            "#a4161a",
+            "#ba181b",
+            "#e5383b",
+            "#b1a7a6",
+            "#d3d3d3",
+            "#f5f3f4",
+            "#ffffff"
+          ]
+        },
+        {
+          "id": "5e9f3b7201f1070007dabbe0",
+          "name": "Deep Sea Blue",
+          "colors": [
+            "#0466c8",
+            "#0353a4",
+            "#023e7d",
+            "#002855",
+            "#001845",
+            "#001233",
+            "#33415c",
+            "#5c677d",
+            "#7d8597",
+            "#979dac"
+          ]
+        },
+        {
+          "id": "5e9c91a018a3f413573edcfc",
+          "name": "Sunny Beach Day",
+          "colors": [
+            "#001524",
+            "#15616d",
+            "#ffecd1",
+            "#ff7d00",
+            "#78290f"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a35f2",
+          "name": "Earthy Tones",
+          "colors": [
+            "#edafb8",
+            "#f7e1d7",
+            "#dedbd2",
+            "#b0c4b1",
+            "#4a5759"
+          ]
+        },
+        {
+          "id": "5e9c870018a3f413572b2f42",
+          "name": "Neutral Earth Tones",
+          "colors": [
+            "#0a0908",
+            "#22333b",
+            "#eae0d5",
+            "#c6ac8f",
+            "#5e503f"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a324e",
+          "name": "Sunrise Glow",
+          "colors": [
+            "#233d4d",
+            "#fe7f2d",
+            "#fcca46",
+            "#a1c181",
+            "#619b8a"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a7413",
+          "name": "Forest Hues",
+          "colors": [
+            "#283d3b",
+            "#197278",
+            "#edddd4",
+            "#c44536",
+            "#772e25"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a79aa",
+          "name": "Ocean Sunset",
+          "colors": [
+            "#001427",
+            "#708d81",
+            "#f4d58d",
+            "#bf0603",
+            "#8d0801"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3281",
+          "name": "Monochrome Harmony",
+          "colors": [
+            "#cfdbd5",
+            "#e8eddf",
+            "#f5cb5c",
+            "#242423",
+            "#333533"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2f19",
+          "name": "Fiery Red",
+          "colors": [
+            "#220901",
+            "#621708",
+            "#941b0c",
+            "#bc3908",
+            "#f6aa1c"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2d6d",
+          "name": "Deep Sea",
+          "colors": [
+            "#ffffff",
+            "#00171f",
+            "#003459",
+            "#007ea7",
+            "#00a8e8"
+          ]
+        },
+        {
+          "id": "5e9c86e118a3f413572a9825",
+          "name": "Crimson Hues",
+          "colors": [
+            "#250902",
+            "#38040e",
+            "#640d14",
+            "#800e13",
+            "#ad2831"
+          ]
+        },
+        {
+          "id": "5f70f76c750e76000aba5697",
+          "name": "Sunset Gradient",
+          "colors": [
+            "#ffedd8",
+            "#f3d5b5",
+            "#e7bc91",
+            "#d4a276",
+            "#bc8a5f",
+            "#a47148",
+            "#8b5e34",
+            "#6f4518",
+            "#603808",
+            "#583101"
+          ]
+        },
+        {
+          "id": "5e9c86e118a3f413572a9bb4",
+          "name": "Ocean Serenity",
+          "colors": [
+            "#01161e",
+            "#124559",
+            "#598392",
+            "#aec3b0",
+            "#eff6e0"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3165",
+          "name": "Deep Blue Sea",
+          "colors": [
+            "#0b132b",
+            "#1c2541",
+            "#3a506b",
+            "#5bc0be",
+            "#6fffe9"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a77c8",
+          "name": "Deep Sea",
+          "colors": [
+            "#0d1321",
+            "#1d2d44",
+            "#3e5c76",
+            "#748cab",
+            "#f0ebd8"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7991",
+          "name": "Blue Lagoon",
+          "colors": [
+            "#00a6fb",
+            "#0582ca",
+            "#006494",
+            "#003554",
+            "#051923"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572abc5d",
+          "name": "Sunset Bliss",
+          "colors": [
+            "#50514f",
+            "#f25f5c",
+            "#ffe066",
+            "#247ba0",
+            "#70c1b3"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b074a",
+          "name": "Minimalist Elegance",
+          "colors": [
+            "#2d3142",
+            "#bfc0c0",
+            "#ffffff",
+            "#ef8354",
+            "#4f5d75"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a767e",
+          "name": "Deep Ocean Blue",
+          "colors": [
+            "#0a1128",
+            "#001f54",
+            "#034078",
+            "#1282a2",
+            "#fefcfb"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572ac17b",
+          "name": "Ocean Sunset",
+          "colors": [
+            "#177e89",
+            "#084c61",
+            "#db3a34",
+            "#ffc857",
+            "#323031"
+          ]
+        },
+        {
+          "id": "5e9c871418a3f413572b88a0",
+          "name": "Orange Sunset Sky",
+          "colors": [
+            "#2d3142",
+            "#4f5d75",
+            "#bfc0c0",
+            "#ffffff",
+            "#ef8354"
+          ]
+        },
+        {
+          "id": "5ea2bec624a097000757121e",
+          "name": "Sunflower Fields",
+          "colors": [
+            "#d6d6d6",
+            "#ffee32",
+            "#ffd100",
+            "#202020",
+            "#333533"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a328f",
+          "name": "Silent Waters",
+          "colors": [
+            "#e0fbfc",
+            "#c2dfe3",
+            "#9db4c0",
+            "#5c6b73",
+            "#253237"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b0c85",
+          "name": "Monochrome Red",
+          "colors": [
+            "#2b2d42",
+            "#8d99ae",
+            "#edf2f4",
+            "#ef233c",
+            "#d80032"
+          ]
+        },
+        {
+          "id": "5e9c86ff18a3f413572b22f1",
+          "name": "Neon Jungle",
+          "colors": [
+            "#0c0f0a",
+            "#ff206e",
+            "#fbff12",
+            "#41ead4",
+            "#ffffff"
+          ]
+        },
+        {
+          "id": "5e9c86f018a3f413572add44",
+          "name": "Ocean Breeze",
+          "colors": [
+            "#495867",
+            "#577399",
+            "#bdd5ea",
+            "#f7f7ff",
+            "#fe5f55"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2c68",
+          "name": "Industrial Blue",
+          "colors": [
+            "#dcdcdd",
+            "#c5c3c6",
+            "#46494c",
+            "#4c5c68",
+            "#1985a1"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a8161",
+          "name": "Autumn Harvest",
+          "colors": [
+            "#202c39",
+            "#283845",
+            "#b8b08d",
+            "#f2d492",
+            "#f29559"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "count": 48,
+      "palettes": [
+        {
+          "id": "5e9c86d918a3f413572a740e",
+          "name": "Coastal Vibes",
+          "colors": [
+            "#160f29",
+            "#246a73",
+            "#368f8b",
+            "#f3dfc1",
+            "#ddbea8"
+          ]
+        },
+        {
+          "id": "5e9c86f818a3f413572b03e7",
+          "name": "Mystic Evening",
+          "colors": [
+            "#1a1423",
+            "#372549",
+            "#774c60",
+            "#b75d69",
+            "#eacdc2"
+          ]
+        },
+        {
+          "id": "5e9c86ef18a3f413572ac9f9",
+          "name": "Tranquil Waters",
+          "colors": [
+            "#1f363d",
+            "#40798c",
+            "#70a9a1",
+            "#9ec1a3",
+            "#cfe0c3"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3290",
+          "name": "Soft Serenity",
+          "colors": [
+            "#fbfbf2",
+            "#e5e6e4",
+            "#cfd2cd",
+            "#a6a2a2",
+            "#847577"
+          ]
+        },
+        {
+          "id": "5e9c86e018a3f413572a8993",
+          "name": "Vintage Charm",
+          "colors": [
+            "#04151f",
+            "#183a37",
+            "#efd6ac",
+            "#c44900",
+            "#432534"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a33f8",
+          "name": "Monochrome Sky",
+          "colors": [
+            "#000000",
+            "#2f4550",
+            "#586f7c",
+            "#b8dbd9",
+            "#f4f4f9"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7977",
+          "name": "Nautical Blues",
+          "colors": [
+            "#00072d",
+            "#001c55",
+            "#0a2472",
+            "#0e6ba8",
+            "#a6e1fa"
+          ]
+        },
+        {
+          "id": "5e9c870018a3f413572b2a98",
+          "name": "Silver Lining",
+          "colors": [
+            "#595959",
+            "#7f7f7f",
+            "#a5a5a5",
+            "#cccccc",
+            "#f2f2f2"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7c2c",
+          "name": "Mocha Latte",
+          "colors": [
+            "#0a0908",
+            "#22333b",
+            "#f2f4f3",
+            "#a9927d",
+            "#5e503f"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2e4b",
+          "name": "Forest Green",
+          "colors": [
+            "#1f2421",
+            "#216869",
+            "#49a078",
+            "#9cc5a1",
+            "#dce1de"
+          ]
+        },
+        {
+          "id": "5e9c86e018a3f413572a8e37",
+          "name": "Earthy Tones",
+          "colors": [
+            "#252323",
+            "#70798c",
+            "#f5f1ed",
+            "#dad2bc",
+            "#a99985"
+          ]
+        },
+        {
+          "id": "5e9c86fe18a3f413572b17bb",
+          "name": "Azure Skies",
+          "colors": [
+            "#080708",
+            "#3772ff",
+            "#df2935",
+            "#fdca40",
+            "#e6e8e6"
+          ]
+        },
+        {
+          "id": "5e9c86ff18a3f413572b2151",
+          "name": "Vintage Sunset",
+          "colors": [
+            "#002642",
+            "#840032",
+            "#e59500",
+            "#e5dada",
+            "#02040f"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a73d7",
+          "name": "Cozy Cabin",
+          "colors": [
+            "#7a6c5d",
+            "#2a3d45",
+            "#ddc9b4",
+            "#bcac9b",
+            "#c17c74"
+          ]
+        },
+        {
+          "id": "5e9c870918a3f413572b615b",
+          "name": "Moonlit Mist",
+          "colors": [
+            "#393d3f",
+            "#fdfdff",
+            "#c6c5b9",
+            "#62929e",
+            "#546a7b"
+          ]
+        },
+        {
+          "id": "5e9c86e018a3f413572a8ab9",
+          "name": "Misty Morning",
+          "colors": [
+            "#223843",
+            "#eff1f3",
+            "#dbd3d8",
+            "#d8b4a0",
+            "#d77a61"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7d6e",
+          "name": "Twilight Hues",
+          "colors": [
+            "#11151c",
+            "#212d40",
+            "#364156",
+            "#7d4e57",
+            "#d66853"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7c75",
+          "name": "Mystic Waters",
+          "colors": [
+            "#031926",
+            "#468189",
+            "#77aca2",
+            "#9dbebb",
+            "#f4e9cd"
+          ]
+        },
+        {
+          "id": "5e9c870818a3f413572b5451",
+          "name": "Cozy Fireside",
+          "colors": [
+            "#231f20",
+            "#bb4430",
+            "#7ebdc2",
+            "#f3dfa2",
+            "#efe6dd"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2ee0",
+          "name": "Twilight Dreams",
+          "colors": [
+            "#97dffc",
+            "#858ae3",
+            "#613dc1",
+            "#4e148c",
+            "#2c0735"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a739c",
+          "name": "Mossy Woods",
+          "colors": [
+            "#0a100d",
+            "#b9baa3",
+            "#d6d5c9",
+            "#a22c29",
+            "#902923"
+          ]
+        },
+        {
+          "id": "5e9c86fa18a3f413572b1282",
+          "name": "Cherry Blossom",
+          "colors": [
+            "#ffd9da",
+            "#ea638c",
+            "#89023e",
+            "#30343f",
+            "#1b2021"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b0783",
+          "name": "Gothic Romance",
+          "colors": [
+            "#0a0908",
+            "#49111c",
+            "#f2f4f3",
+            "#a9927d",
+            "#5e503f"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7c2d",
+          "name": "Tropical Tones",
+          "colors": [
+            "#042a2b",
+            "#5eb1bf",
+            "#cdedf6",
+            "#ef7b45",
+            "#d84727"
+          ]
+        },
+        {
+          "id": "5e9c870118a3f413572b3c88",
+          "name": "Mystic Waters",
+          "colors": [
+            "#292f36",
+            "#4ecdc4",
+            "#f7fff7",
+            "#ff6b6b",
+            "#ffe66d"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a73c2",
+          "name": "Vintage Vibes",
+          "colors": [
+            "#f1dac4",
+            "#a69cac",
+            "#474973",
+            "#161b33",
+            "#0d0c1d"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7d41",
+          "name": "Autumn Harmony",
+          "colors": [
+            "#3a2e39",
+            "#1e555c",
+            "#f4d8cd",
+            "#edb183",
+            "#f15152"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2de1",
+          "name": "Moonlight Glow",
+          "colors": [
+            "#30343f",
+            "#fafaff",
+            "#e4d9ff",
+            "#273469",
+            "#1e2749"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2bd4",
+          "name": "Ocean Breeze",
+          "colors": [
+            "#d8dbe2",
+            "#a9bcd0",
+            "#58a4b0",
+            "#373f51",
+            "#1b1b1e"
+          ]
+        },
+        {
+          "id": "5e9c86f818a3f413572b02f9",
+          "name": "Autumn Glow",
+          "colors": [
+            "#3c1518",
+            "#69140e",
+            "#a44200",
+            "#d58936",
+            "#f2f3ae"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2d89",
+          "name": "Midnight Blues",
+          "colors": [
+            "#000000",
+            "#0c1821",
+            "#1b2a41",
+            "#324a5f",
+            "#ccc9dc"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2d46",
+          "name": "Muted Pastels",
+          "colors": [
+            "#424b54",
+            "#b38d97",
+            "#d5aca9",
+            "#ebcfb2",
+            "#c5baaf"
+          ]
+        },
+        {
+          "id": "5e9c870818a3f413572b5455",
+          "name": "Seaside Sunset",
+          "colors": [
+            "#0a2463",
+            "#3e92cc",
+            "#fffaff",
+            "#d8315b",
+            "#1e1b18"
+          ]
+        },
+        {
+          "id": "5e9c86f818a3f413572b035b",
+          "name": "Nature's Embrace",
+          "colors": [
+            "#424b54",
+            "#93a8ac",
+            "#ffffff",
+            "#e2b4bd",
+            "#9b6a6c"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7af5",
+          "name": "Moonlit Jazz",
+          "colors": [
+            "#31393c",
+            "#2176ff",
+            "#33a1fd",
+            "#fdca40",
+            "#f79824"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3159",
+          "name": "Earthy Harmony",
+          "colors": [
+            "#f7f7f2",
+            "#e4e6c3",
+            "#899878",
+            "#222725",
+            "#121113"
+          ]
+        },
+        {
+          "id": "5ea01a8f14225100071dada1",
+          "name": "Warm Earth Tones",
+          "colors": [
+            "#b76935",
+            "#a56336",
+            "#935e38",
+            "#815839",
+            "#6f523b",
+            "#5c4d3c",
+            "#4a473e",
+            "#38413f",
+            "#263c41",
+            "#143642"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a741b",
+          "name": "Monochrome Chic",
+          "colors": [
+            "#474448",
+            "#2d232e",
+            "#e0ddcf",
+            "#534b52",
+            "#f1f0ea"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a3a4a",
+          "name": "Midnight Magic",
+          "colors": [
+            "#02010a",
+            "#04052e",
+            "#140152",
+            "#22007c",
+            "#0d00a4"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a762e",
+          "name": "Vintage Charm",
+          "colors": [
+            "#283044",
+            "#78a1bb",
+            "#ebf5ee",
+            "#bfa89e",
+            "#8b786d"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2ece",
+          "name": "Sweet Symphony",
+          "colors": [
+            "#ffb997",
+            "#f67e7d",
+            "#843b62",
+            "#0b032d",
+            "#74546a"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a8307",
+          "name": "Forest Adventure",
+          "colors": [
+            "#131515",
+            "#2b2c28",
+            "#339989",
+            "#7de2d1",
+            "#fffafb"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a415b",
+          "name": "Cozy Neutrals",
+          "colors": [
+            "#9a8f97",
+            "#c3baba",
+            "#e9e3e6",
+            "#b2b2b2",
+            "#736f72"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2f88",
+          "name": "Green Oasis",
+          "colors": [
+            "#020202",
+            "#0d2818",
+            "#04471c",
+            "#058c42",
+            "#16db65"
+          ]
+        },
+        {
+          "id": "5e9c86f018a3f413572ad386",
+          "name": "White Elegance",
+          "colors": [
+            "#1c1c1c",
+            "#daddd8",
+            "#ecebe4",
+            "#eef0f2",
+            "#fafaff"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2bda",
+          "name": "Aqua Whimsy",
+          "colors": [
+            "#119da4",
+            "#0c7489",
+            "#13505b",
+            "#040404",
+            "#d7d9ce"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2cfe",
+          "name": "Blue Lagoon",
+          "colors": [
+            "#04080f",
+            "#507dbc",
+            "#a1c6ea",
+            "#bbd1ea",
+            "#dae3e5"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3636",
+          "name": "Mystic Garden",
+          "colors": [
+            "#bfc3ba",
+            "#a9aca9",
+            "#60495a",
+            "#3f3244",
+            "#2f2235"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "count": 48,
+      "palettes": [
+        {
+          "id": "5e9c871418a3f413572b88f2",
+          "name": "Grayscale Harmony",
+          "colors": [
+            "#ccdad1",
+            "#9caea9",
+            "#788585",
+            "#6f6866",
+            "#38302e"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2e7b",
+          "name": "Sunny Sorbet",
+          "colors": [
+            "#f7dba7",
+            "#f1ab86",
+            "#c57b57",
+            "#1e2d2f",
+            "#041f1e"
+          ]
+        },
+        {
+          "id": "5e9c86f818a3f413572b035a",
+          "name": "Gothic Glam",
+          "colors": [
+            "#000000",
+            "#3d2645",
+            "#832161",
+            "#da4167",
+            "#f0eff4"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a74ca",
+          "name": "Midnight Fire",
+          "colors": [
+            "#0c090d",
+            "#e01a4f",
+            "#f15946",
+            "#f9c22e",
+            "#53b3cb"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b0aee",
+          "name": "Vintage Rose",
+          "colors": [
+            "#93b7be",
+            "#f1fffa",
+            "#d5c7bc",
+            "#785964",
+            "#454545"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2c1a",
+          "name": "Soft Serenity",
+          "colors": [
+            "#dbc2cf",
+            "#9fa2b2",
+            "#3c7a89",
+            "#2e4756",
+            "#16262e"
+          ]
+        },
+        {
+          "id": "5e9c86e018a3f413572a854c",
+          "name": "Ocean Serenity",
+          "colors": [
+            "#161925",
+            "#23395b",
+            "#406e8e",
+            "#8ea8c3",
+            "#cbf7ed"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a799f",
+          "name": "Forest Whispers",
+          "colors": [
+            "#0d0a0b",
+            "#454955",
+            "#f3eff5",
+            "#72b01d",
+            "#3f7d20"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572ac032",
+          "name": "Metallic Elegance",
+          "colors": [
+            "#000000",
+            "#66666e",
+            "#9999a1",
+            "#e6e6e9",
+            "#f4f4f6"
+          ]
+        },
+        {
+          "id": "5e9c86f818a3f413572b0356",
+          "name": "Mauve Magic",
+          "colors": [
+            "#bebbbb",
+            "#444054",
+            "#2f243a",
+            "#fac9b8",
+            "#db8a74"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a7442",
+          "name": "Dark Enchantment",
+          "colors": [
+            "#faa916",
+            "#fbfffe",
+            "#6d676e",
+            "#1b1b1e",
+            "#96031a"
+          ]
+        },
+        {
+          "id": "5e9c86f818a3f413572b0393",
+          "name": "Summer Delight",
+          "colors": [
+            "#fcaa67",
+            "#b0413e",
+            "#ffffc7",
+            "#548687",
+            "#473335"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b0dbd",
+          "name": "Monochrome Chic",
+          "colors": [
+            "#363636",
+            "#242f40",
+            "#cca43b",
+            "#e5e5e5",
+            "#ffffff"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a753b",
+          "name": "Midnight Fire",
+          "colors": [
+            "#273043",
+            "#9197ae",
+            "#eff6ee",
+            "#f02d3a",
+            "#dd0426"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2dcd",
+          "name": "Mystic Rose",
+          "colors": [
+            "#773344",
+            "#e3b5a4",
+            "#f5e9e2",
+            "#0b0014",
+            "#d44d5c"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7d3f",
+          "name": "Enchanted Sunset",
+          "colors": [
+            "#44355b",
+            "#31263e",
+            "#221e22",
+            "#eca72c",
+            "#ee5622"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a3c06",
+          "name": "Mystic Mauve",
+          "colors": [
+            "#1a1423",
+            "#3d314a",
+            "#684756",
+            "#96705b",
+            "#ab8476"
+          ]
+        },
+        {
+          "id": "5e9c86f918a3f413572b0d78",
+          "name": "Twilight Serenade",
+          "colors": [
+            "#564787",
+            "#dbcbd8",
+            "#f2fdff",
+            "#9ad4d6",
+            "#101935"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2c3b",
+          "name": "Misty Morning",
+          "colors": [
+            "#f7c59f",
+            "#2a324b",
+            "#767b91",
+            "#c7ccdb",
+            "#e1e5ee"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a37fc",
+          "name": "Midnight Voyage",
+          "colors": [
+            "#000505",
+            "#3b3355",
+            "#5d5d81",
+            "#bfcde0",
+            "#fefcfd"
+          ]
+        },
+        {
+          "id": "5e9c871a18a3f413572b8f8e",
+          "name": "Midnight Glow",
+          "colors": [
+            "#080705",
+            "#40434e",
+            "#702632",
+            "#912f40",
+            "#fffffa"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a748f",
+          "name": "Earthy Elegance",
+          "colors": [
+            "#f06543",
+            "#e8e9eb",
+            "#e0dfd5",
+            "#313638",
+            "#f09d51"
+          ]
+        },
+        {
+          "id": "5e9c86e618a3f413572aa2af",
+          "name": "Gothic Glam",
+          "colors": [
+            "#050609",
+            "#f5d0c5",
+            "#d69f7e",
+            "#774936",
+            "#3c0000"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a373b",
+          "name": "Dark Aurora",
+          "colors": [
+            "#000000",
+            "#502f4c",
+            "#70587c",
+            "#c8b8db",
+            "#f9f4f5"
+          ]
+        },
+        {
+          "id": "5e9c86ef18a3f413572ac7b5",
+          "name": "Blue Horizon",
+          "colors": [
+            "#ffffff",
+            "#00a7e1",
+            "#00171f",
+            "#003459",
+            "#007ea7"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7af4",
+          "name": "Muted Elegance",
+          "colors": [
+            "#bfbdc1",
+            "#6d6a75",
+            "#37323e",
+            "#deb841",
+            "#de9e36"
+          ]
+        },
+        {
+          "id": "5e9c870118a3f413572b3c7c",
+          "name": "Candy Crush",
+          "colors": [
+            "#e54b4b",
+            "#ffa987",
+            "#f7ebe8",
+            "#444140",
+            "#1e1e24"
+          ]
+        },
+        {
+          "id": "5e9c8d1418a3f4135738a7e1",
+          "name": "Earthy Elegance",
+          "colors": [
+            "#14110f",
+            "#34312d",
+            "#7e7f83",
+            "#d9c5b2",
+            "#f3f3f4"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3095",
+          "name": "Whispering Woods",
+          "colors": [
+            "#f3e8ee",
+            "#bacdb0",
+            "#729b79",
+            "#475b63",
+            "#2e2c2f"
+          ]
+        },
+        {
+          "id": "5e9c872518a3f413572bc6f8",
+          "name": "Monochrome Chic",
+          "colors": [
+            "#000000",
+            "#839788",
+            "#eee0cb",
+            "#baa898",
+            "#bfd7ea"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2bb0",
+          "name": "Dark Romance",
+          "colors": [
+            "#211103",
+            "#3d1308",
+            "#7b0d1e",
+            "#9f2042",
+            "#f8e5ee"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a81f9",
+          "name": "Moonlit Ocean",
+          "colors": [
+            "#0a090c",
+            "#f0edee",
+            "#07393c",
+            "#2c666e",
+            "#90ddf0"
+          ]
+        },
+        {
+          "id": "5e9c86ff18a3f413572b1fec",
+          "name": "Summer Delight",
+          "colors": [
+            "#1f271b",
+            "#19647e",
+            "#28afb0",
+            "#f4d35e",
+            "#ee964b"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a33f7",
+          "name": "Ocean Breeze",
+          "colors": [
+            "#ffede1",
+            "#f9fbf2",
+            "#d7f9ff",
+            "#afcbff",
+            "#0e1c36"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2f0f",
+          "name": "Misty Forest",
+          "colors": [
+            "#74b3ce",
+            "#508991",
+            "#172a3a",
+            "#004346",
+            "#09bc8a"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a392b",
+          "name": "Magic Sunset",
+          "colors": [
+            "#f9dbbd",
+            "#fca17d",
+            "#da627d",
+            "#9a348e",
+            "#0d0628"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572ac357",
+          "name": "Peachy Neutrals",
+          "colors": [
+            "#f15025",
+            "#ffffff",
+            "#e6e8e6",
+            "#ced0ce",
+            "#191919"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a366d",
+          "name": "Whispering Woods",
+          "colors": [
+            "#e8f1f2",
+            "#b3efb2",
+            "#7a9e7e",
+            "#31493c",
+            "#001a23"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3089",
+          "name": "Velvet Night",
+          "colors": [
+            "#e2cfea",
+            "#a06cd5",
+            "#6247aa",
+            "#102b3f",
+            "#062726"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a352a",
+          "name": "Enchanted Evening",
+          "colors": [
+            "#242038",
+            "#725ac1",
+            "#8d86c9",
+            "#cac4ce",
+            "#f7ece1"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2cc4",
+          "name": "Dusk Embrace",
+          "colors": [
+            "#172121",
+            "#444554",
+            "#7f7b82",
+            "#bfacb5",
+            "#e5d0cc"
+          ]
+        },
+        {
+          "id": "5e9c86ff18a3f413572b2133",
+          "name": "Candy Apple",
+          "colors": [
+            "#1e1e24",
+            "#92140c",
+            "#fff8f0",
+            "#ffcf99",
+            "#111d4a"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572abe23",
+          "name": "Moonlit Serenade",
+          "colors": [
+            "#eec643",
+            "#141414",
+            "#eef0f2",
+            "#0d21a1",
+            "#011638"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572abc46",
+          "name": "Tropical Spice",
+          "colors": [
+            "#ffc15e",
+            "#f7b05b",
+            "#f7934c",
+            "#cc5803",
+            "#1f1300"
+          ]
+        },
+        {
+          "id": "5e9c86e818a3f413572abfd1",
+          "name": "Autumn Bliss",
+          "colors": [
+            "#fb8b24",
+            "#d90368",
+            "#820263",
+            "#291720",
+            "#04a777"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2baa",
+          "name": "Earthy Harmony",
+          "colors": [
+            "#eff9f0",
+            "#ddc8c4",
+            "#896a67",
+            "#6b4d57",
+            "#13070c"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a3a3c",
+          "name": "Midnight Magic",
+          "colors": [
+            "#3a015c",
+            "#4f0147",
+            "#35012c",
+            "#290025",
+            "#11001c"
+          ]
+        },
+        {
+          "id": "5e9c86e018a3f413572a9171",
+          "name": "Nautical Adventure",
+          "colors": [
+            "#104f55",
+            "#32746d",
+            "#9ec5ab",
+            "#01200f",
+            "#011502"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 4,
+      "count": 48,
+      "palettes": [
+        {
+          "id": "5e9c86cd18a3f413572a2c02",
+          "name": "Earthy Delight",
+          "colors": [
+            "#3e5641",
+            "#a24936",
+            "#d36135",
+            "#282b28",
+            "#83bca9"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2bac",
+          "name": "Monochrome Chic",
+          "colors": [
+            "#353535",
+            "#ffffff",
+            "#d2d7df",
+            "#bdbbb0",
+            "#8a897c"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3201",
+          "name": "Silver Shadows",
+          "colors": [
+            "#eef0f2",
+            "#c6c7c4",
+            "#a2999e",
+            "#846a6a",
+            "#353b3c"
+          ]
+        },
+        {
+          "id": "5e9c86ff18a3f413572b1ccb",
+          "name": "Sunny Side Up",
+          "colors": [
+            "#1c110a",
+            "#e4d6a7",
+            "#e9b44c",
+            "#9b2915",
+            "#50a2a7"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a3f58",
+          "name": "Soft Serenity",
+          "colors": [
+            "#fde8e9",
+            "#e3bac6",
+            "#bc9ec1",
+            "#596475",
+            "#1f2232"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2d0c",
+          "name": "Whimsical Waters",
+          "colors": [
+            "#ffffff",
+            "#3b413c",
+            "#9db5b2",
+            "#daf0ee",
+            "#94d1be"
+          ]
+        },
+        {
+          "id": "5e9c86ff18a3f413572b1e6b",
+          "name": "Autumn Blaze",
+          "colors": [
+            "#f0a202",
+            "#f18805",
+            "#d95d39",
+            "#0e1428",
+            "#7b9e89"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2bf1",
+          "name": "Muted Elegance",
+          "colors": [
+            "#f1e4e8",
+            "#e2dcde",
+            "#ceb1be",
+            "#b97375",
+            "#2d2d34"
+          ]
+        },
+        {
+          "id": "5e9c86f218a3f413572aec97",
+          "name": "Neon Skyline",
+          "colors": [
+            "#011627",
+            "#ff3366",
+            "#2ec4b6",
+            "#f6f7f8",
+            "#20a4f3"
+          ]
+        },
+        {
+          "id": "5e9c903418a3f413573cefe0",
+          "name": "Ocean Breeze",
+          "colors": [
+            "#0d1821",
+            "#344966",
+            "#b4cded",
+            "#f0f4ef",
+            "#bfcc94"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a77e5",
+          "name": "Sage Serenity",
+          "colors": [
+            "#e1ca96",
+            "#aca885",
+            "#918b76",
+            "#626c66",
+            "#434a42"
+          ]
+        },
+        {
+          "id": "5e9c870018a3f413572b29ff",
+          "name": "Toasty Ember",
+          "colors": [
+            "#242331",
+            "#533e2d",
+            "#a27035",
+            "#b88b4a",
+            "#ddca7d"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2be1",
+          "name": "Monochrome Charm",
+          "colors": [
+            "#050505",
+            "#1b9aaa",
+            "#dddbcb",
+            "#f5f1e3",
+            "#ffffff"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2c9b",
+          "name": "Deep Sea Dive",
+          "colors": [
+            "#000f08",
+            "#1c3738",
+            "#4d4847",
+            "#f4fff8",
+            "#8baaad"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a782c",
+          "name": "Misty Morning",
+          "colors": [
+            "#1c2321",
+            "#7d98a1",
+            "#5e6572",
+            "#a9b4c2",
+            "#eef1ef"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a30f3",
+          "name": "Moonlit Whisper",
+          "colors": [
+            "#1c1d21",
+            "#a288a6",
+            "#bb9bb0",
+            "#ccbcbc",
+            "#f1e3e4"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a339c",
+          "name": "Rustic Sunset",
+          "colors": [
+            "#262322",
+            "#63372c",
+            "#c97d60",
+            "#ffbcb5",
+            "#f2e5d7"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2c6b",
+          "name": "Rose Petal",
+          "colors": [
+            "#f5e3e0",
+            "#e8b4bc",
+            "#d282a6",
+            "#6e4555",
+            "#3a3238"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a33fa",
+          "name": "Enchanted Forest",
+          "colors": [
+            "#f7ebec",
+            "#ddbdd5",
+            "#ac9fbb",
+            "#59656f",
+            "#1d1e2c"
+          ]
+        },
+        {
+          "id": "5e9c871418a3f413572b88ef",
+          "name": "Jungle Vibe",
+          "colors": [
+            "#040f0f",
+            "#248232",
+            "#2ba84a",
+            "#2d3a3a",
+            "#fcfffc"
+          ]
+        },
+        {
+          "id": "5e9c86d618a3f413572a5ec9",
+          "name": "Magic Unicorn",
+          "colors": [
+            "#ea7af4",
+            "#b43e8f",
+            "#6200b3",
+            "#3b0086",
+            "#290628"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a34df",
+          "name": "Mystic Waters",
+          "colors": [
+            "#d9dbf1",
+            "#d0cdd7",
+            "#acb0bd",
+            "#416165",
+            "#0b3948"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7eba",
+          "name": "Fiery Sunset",
+          "colors": [
+            "#fdffff",
+            "#b10f2e",
+            "#570000",
+            "#280000",
+            "#de7c5a"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a78c4",
+          "name": "Cherry Blossom",
+          "colors": [
+            "#f2545b",
+            "#a93f55",
+            "#19323c",
+            "#f3f7f0",
+            "#8c5e58"
+          ]
+        },
+        {
+          "id": "5e9c870118a3f413572b3c84",
+          "name": "Golden Sunset",
+          "colors": [
+            "#f2f3ae",
+            "#edd382",
+            "#fc9e4f",
+            "#f4442e",
+            "#020122"
+          ]
+        },
+        {
+          "id": "5e9c870118a3f413572b35c6",
+          "name": "Sunset Serenade",
+          "colors": [
+            "#4c5454",
+            "#ff715b",
+            "#ffffff",
+            "#1ea896",
+            "#523f38"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a7424",
+          "name": "Night Sky",
+          "colors": [
+            "#000022",
+            "#001242",
+            "#0094c6",
+            "#005e7c",
+            "#040f16"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a763b",
+          "name": "Misty Forest",
+          "colors": [
+            "#77878b",
+            "#305252",
+            "#373e40",
+            "#488286",
+            "#b7d5d4"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7e3e",
+          "name": "Rustic Charm",
+          "colors": [
+            "#423e37",
+            "#e3b23c",
+            "#edebd7",
+            "#a39594",
+            "#6e675f"
+          ]
+        },
+        {
+          "id": "5e9c918118a3f413573ea10e",
+          "name": "Cozy Cafe",
+          "colors": [
+            "#171614",
+            "#3a2618",
+            "#754043",
+            "#9a8873",
+            "#37423d"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a73c6",
+          "name": "Forest Floor",
+          "colors": [
+            "#000500",
+            "#362417",
+            "#92817a",
+            "#f1dabf",
+            "#fffbff"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a3529",
+          "name": "Monochrome Magic",
+          "colors": [
+            "#eaeaea",
+            "#893168",
+            "#4a1942",
+            "#2e1c2b",
+            "#050404"
+          ]
+        },
+        {
+          "id": "5e9c86d918a3f413572a74a0",
+          "name": "Cherry Blossom",
+          "colors": [
+            "#0c120c",
+            "#c20114",
+            "#6d7275",
+            "#c7d6d5",
+            "#ecebf3"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2cd1",
+          "name": "Earthly Serenade",
+          "colors": [
+            "#ba2d0b",
+            "#d5f2e3",
+            "#73ba9b",
+            "#003e1f",
+            "#01110a"
+          ]
+        },
+        {
+          "id": "5e9c86cf18a3f413572a4ee1",
+          "name": "Purple Haze",
+          "colors": [
+            "#a393bf",
+            "#9882ac",
+            "#73648a",
+            "#453750",
+            "#0c0910"
+          ]
+        },
+        {
+          "id": "5e9c91d918a3f413573f15fd",
+          "name": "Sunset Beach",
+          "colors": [
+            "#201e1f",
+            "#ff4000",
+            "#faaa8d",
+            "#feefdd",
+            "#50b2c0"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a7c5c",
+          "name": "Sunset Glow",
+          "colors": [
+            "#130303",
+            "#2d080a",
+            "#7c3626",
+            "#f5853f",
+            "#ffcdbc"
+          ]
+        },
+        {
+          "id": "5e9c86ef18a3f413572ad2c7",
+          "name": "Pastel Dream",
+          "colors": [
+            "#413c58",
+            "#a3c4bc",
+            "#bfd7b5",
+            "#e7efc5",
+            "#f2dda4"
+          ]
+        },
+        {
+          "id": "5e9c86e118a3f413572a9ea7",
+          "name": "Mystic Twilight",
+          "colors": [
+            "#84828f",
+            "#6a687a",
+            "#536271",
+            "#3e4c5e",
+            "#2c3d55"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2d32",
+          "name": "Enchanted Night",
+          "colors": [
+            "#faa6ff",
+            "#7353ba",
+            "#2f195f",
+            "#0f1020",
+            "#efc3f5"
+          ]
+        },
+        {
+          "id": "5e9c86cd18a3f413572a2de0",
+          "name": "Mystic Twilight",
+          "colors": [
+            "#1e3231",
+            "#485665",
+            "#8e7c93",
+            "#d0a5c0",
+            "#f6c0d0"
+          ]
+        },
+        {
+          "id": "5e9c86e118a3f413572a921f",
+          "name": "Monochrome Magic",
+          "colors": [
+            "#fffffa",
+            "#515052",
+            "#000103",
+            "#333138",
+            "#ff312e"
+          ]
+        },
+        {
+          "id": "5e9c86ff18a3f413572b1d0b",
+          "name": "Midnight Sky",
+          "colors": [
+            "#222222",
+            "#ffffff",
+            "#1c5d99",
+            "#639fab",
+            "#bbcde5"
+          ]
+        },
+        {
+          "id": "5e9c86e718a3f413572ab1b7",
+          "name": "Vintage Charm",
+          "colors": [
+            "#bcabae",
+            "#0f0f0f",
+            "#2d2e2e",
+            "#716969",
+            "#fbfbfb"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a3dc2",
+          "name": "Vintage Rose",
+          "colors": [
+            "#957186",
+            "#d9b8c4",
+            "#703d57",
+            "#402a2c",
+            "#241715"
+          ]
+        },
+        {
+          "id": "5e9c86ce18a3f413572a3946",
+          "name": "Bold Harmony",
+          "colors": [
+            "#f75c03",
+            "#d90368",
+            "#820263",
+            "#291720",
+            "#04a777"
+          ]
+        },
+        {
+          "id": "5e9c870818a3f413572b5472",
+          "name": "Earthy Tones",
+          "colors": [
+            "#af9164",
+            "#f7f3e3",
+            "#b3b6b7",
+            "#6f1a07",
+            "#2b2118"
+          ]
+        },
+        {
+          "id": "5e9c86df18a3f413572a84f0",
+          "name": "Forest Serenity",
+          "colors": [
+            "#12130f",
+            "#5b9279",
+            "#8fcb9b",
+            "#eae6e5",
+            "#8f8073"
+          ]
+        }
+      ]
+    }
+  ]
+}

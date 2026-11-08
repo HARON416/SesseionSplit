@@ -1,0 +1,84 @@
+@font-face {
+  font-family: "InterVariable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter/InterVariable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "InterVariable";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter/InterVariable-Italic.woff2") format("woff2");
+}
+
+
+:root {
+  font-family: "InterVariable", system-ui, sans-serif;
+  font-optical-sizing: auto;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: light;
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --surface-hover: #e9ecef;
+  --surface-active: #e4edf5;
+  --border: #ced4da;
+  --input-border: #6c757d;
+  --text: #212529;
+  --text-secondary: #495057;
+  --scrollbar: #6c757d;
+  --accent: #1c5d99;
+  --accent-hover: #174d7f;
+  --on-accent: #ffffff;
+  --backdrop: rgb(33 37 41 / 40%);
+  --focus: #1c5d99;
+  --danger: #b33533;
+  --danger-bg: #fff1f0;
+  --danger-solid: #c94442;
+  --on-danger: #ffffff;
+  color: var(--text);
+  background: var(--bg);
+}
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+html { font-size: 62.5%; }
+html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+button { font-family: inherit; }
+button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+::selection { color: var(--text); background: var(--surface-active); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-track-piece,
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+}
+
+:root[data-theme='dark'] {
+  --danger: #ffb4ab;
+  --danger-bg: #4b2426;
+  color-scheme: dark;
+  --bg: #212529;
+  --surface: #343a40;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
+  --surface-hover: #495057;
+  --surface-active: #354d5a;
+  --border: #495057;
+  --input-border: #adb5bd;
+  --text: #f8f9fa;
+  --text-secondary: #ced4da;
+  --scrollbar: #adb5bd;
+  --accent: #639fab;
+  --accent-hover: #bbcde5;
+  --on-accent: #212529;
+  --focus: #bbcde5;
+  --backdrop: rgb(0 0 0 / 55%);
+}

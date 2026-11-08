@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "chromium": {
+    "url": "https://chromium.googlesource.com/chromium/src.git",
+    "version": "157.0.8103.38",
+    "revision": "a733b5afbb3ba618844ff8876b89ad1a774b2f18",
+    "channel": "Stable",
+    "release_platform": "Linux",
+    "source": "https://chromiumdash.appspot.com/fetch_releases?channel=Stable&platform=Linux&num=1"
+  },
+  "depot_tools": {
+    "url": "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
+    "revision": "289a37bda3d848cfe16e6c1c599741ed3890ab55"
+  },
+  "state": "unmodified-baseline",
+  "fingerprint_abi": null
+}

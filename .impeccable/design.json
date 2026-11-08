@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-07T00:00:00Z",
+  "title": "Design System: SessionSplit",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "card-light",
+        "value": "0 4px 12px rgba(0, 0, 0, 0.1)",
+        "purpose": "Profile cards; CSS Scan example #9 (Sketch). https://getcssscan.com/css-box-shadow-examples"
+      },
+      {
+        "name": "card-dark",
+        "value": "0 4px 12px rgba(0, 0, 0, 0.32)",
+        "purpose": "Same profile-card shadow geometry, with stronger opacity for the dark canvas."
+      }
+    ],
+    "motion": [],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Add new profile",
+      "kind": "button",
+      "refersTo": "add-profile",
+      "description": "Left-aligned titlebar action; profile creation is currently a placeholder.",
+      "html": "<button class=\"ds-add-profile\" type=\"button\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\" /></svg>Add new profile</button>",
+      "css": ".ds-add-profile { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 12px; border: 1px solid var(--border, #ced4da); border-radius: 0; background: var(--surface, #ffffff); color: var(--text, #212529); font-family: InterVariable, system-ui, sans-serif; font-size: 13px; font-weight: 550; white-space: nowrap; cursor: pointer; } .ds-add-profile svg { width: 16px; height: 16px; } .ds-add-profile:hover { background: var(--surface-hover, #e9ecef); } .ds-add-profile:active { background: var(--surface-active, #e4edf5); } .ds-add-profile:focus-visible { outline: 2px solid var(--focus, #1c5d99); outline-offset: 2px; }"
+    },
+    {
+      "name": "Window controls",
+      "kind": "custom",
+      "refersTo": "window-control",
+      "description": "Postika-derived minimize, maximize, and close controls. This documentation preview is static; the app uses Wails runtime calls.",
+      "html": "<div class=\"ds-window-controls\" aria-label=\"Window controls\"><button type=\"button\" aria-label=\"Minimize window\"><svg viewBox=\"0 0 256 256\" aria-hidden=\"true\"><path d=\"M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z\" /></svg></button><button type=\"button\" aria-label=\"Maximize window\"><svg viewBox=\"0 0 256 256\" aria-hidden=\"true\"><path d=\"M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H208V208Z\" /></svg></button><button type=\"button\" class=\"ds-close\" aria-label=\"Close window\"><svg viewBox=\"0 0 256 256\" aria-hidden=\"true\"><path d=\"M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z\" /></svg></button></div>",
+      "css": ".ds-window-controls { display: flex; height: 48px; } .ds-window-controls button { display: grid; place-items: center; width: 44px; padding: 0; border: 0; background: transparent; color: var(--text-secondary, #495057); cursor: pointer; } .ds-window-controls svg { width: 14px; height: 14px; fill: currentColor; pointer-events: none; } .ds-window-controls button:hover { background: var(--surface-hover, #e9ecef); color: var(--text, #212529); } .ds-window-controls .ds-close:hover { background: var(--danger-solid, #c94442); color: var(--on-danger, #ffffff); } .ds-window-controls button:focus-visible { outline: 2px solid var(--focus, #1c5d99); outline-offset: -3px; } .ds-window-controls button:disabled { cursor: default; opacity: .5; }"
+    }
+  ],
+  "narrative": {
+    "overview": "Postika-derived window layout and Inter, using neutral surfaces from Coolors Light Steel and blue action colors from Midnight Sky. Selected from 192 palettes across four popular/black pages; see frontend/theme-sources/coolors-review.json.",
+    "rules": [],
+    "dos": [
+      "Do preserve Postika's Inter font files, palette, and window-control styling when maintaining this shell.",
+      "Do keep the profile action left and native window controls right."
+    ],
+    "donts": [
+      "Don't infer future profile behavior or workspace content from this initial shell."
+    ]
+  }
+}
