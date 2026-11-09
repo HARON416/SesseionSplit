@@ -28,7 +28,7 @@ func (s *ProfileService) GetProfileSettings(id string) (ProfileSettingsState, er
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
-		return ProfileSettingsState{}, errors.New("SessionSplit is closing")
+		return ProfileSettingsState{}, errors.New("Isolate is closing")
 	}
 	for _, p := range s.profiles {
 		if p.ID == id {
@@ -43,7 +43,7 @@ func (s *ProfileService) CloseProfile(id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
-		return errors.New("SessionSplit is closing")
+		return errors.New("Isolate is closing")
 	}
 	found := false
 	for _, p := range s.profiles {
@@ -57,8 +57,8 @@ func (s *ProfileService) CloseProfile(id string) error {
 	}
 	if live := s.browsers[id]; live != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		if err := live.browser.Context(ctx).Close(); err != nil {
-			live.launcher.Kill()
+		if err := live.close(ctx); err != nil {
+			live.kill()
 		}
 		cancel()
 		live.cancel()
@@ -70,18 +70,29 @@ func (s *ProfileService) CloseProfile(id string) error {
 	return nil
 }
 
-// TestProfileConnection only probes the saved route. It does not certify all browser traffic.
-func (s *ProfileService) TestProfileConnection(ctx context.Context, id string) (ConnectionDiagnostic, error) {
+// TestProfileConnection probes entered settings without saving them or changing credentials.
+func (s *ProfileService) TestProfileConnection(ctx context.Context, id string, update SettingsUpdate) (ConnectionDiagnostic, error) {
+	if err := ctx.Err(); err != nil {
+		return ConnectionDiagnostic{}, err
+	}
+	settings, store, err := s.prepareConnectionTest(id, update)
+	if err != nil {
+		return ConnectionDiagnostic{}, err
+	}
+	return testProxyConnection(ctx, settings, store, "https://api.ipify.org?format=json")
+}
+
+func (s *ProfileService) prepareConnectionTest(id string, update SettingsUpdate) (ProxySettings, credentialStore, error) {
 	s.mu.Lock()
 	if s.closed {
 		s.mu.Unlock()
-		return ConnectionDiagnostic{}, errors.New("SessionSplit is closing")
+		return ProxySettings{}, nil, errors.New("Isolate is closing")
 	}
-	var settings ProxySettings
+	var savedCredential string
 	found := false
 	for _, p := range s.profiles {
 		if p.ID == id {
-			settings = p.Settings.Proxy
+			savedCredential = p.Settings.Proxy.CredentialID
 			found = true
 			break
 		}
@@ -92,9 +103,39 @@ func (s *ProfileService) TestProfileConnection(ctx context.Context, id string) (
 	}
 	s.mu.Unlock()
 	if !found {
-		return ConnectionDiagnostic{}, errors.New("Profile was not found")
+		return ProxySettings{}, nil, errors.New("Profile was not found")
 	}
-	return testProxyConnection(ctx, settings, store, "https://api.ipify.org?format=json")
+	settings := update.Settings.Proxy
+	settings.CredentialID = ""
+	settings.HasPassword = false
+	if err := validateProxySettings(settings); err != nil {
+		return ProxySettings{}, nil, err
+	}
+	password := ""
+	switch update.PasswordAction {
+	case "", "keep":
+		if settings.Mode != "" && settings.Mode != "direct" {
+			settings.CredentialID = savedCredential
+			var err error
+			password, err = proxyPassword(settings, store)
+			if err != nil {
+				return ProxySettings{}, nil, err
+			}
+		}
+	case "replace":
+		if update.Password == "" {
+			return ProxySettings{}, nil, errors.New("Enter a proxy password")
+		}
+		if len(update.Password) > 255 {
+			return ProxySettings{}, nil, errors.New("Use a proxy password of at most 255 characters")
+		}
+		password = update.Password
+		settings.CredentialID = "connection-test"
+	case "remove":
+	default:
+		return ProxySettings{}, nil, errors.New("Choose whether to keep, replace, or remove the proxy password")
+	}
+	return settings, proxyCredentialSnapshot{key: settings.CredentialID, password: password}, nil
 }
 
 func testProxyConnection(ctx context.Context, settings ProxySettings, store credentialStore, endpoint string) (ConnectionDiagnostic, error) {

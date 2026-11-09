@@ -1,13 +1,13 @@
 [Desktop Entry]
 Version=1.0
-Name=SessionSplit
-Comment=SessionSplit desktop application
+Name=Isolate
+Comment=Isolate desktop application
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/sessionsplit %u
+Exec=/usr/local/bin/isolate %u
 Terminal=false
 Type=Application
-Icon=sessionsplit
+Icon=isolate
 Categories=Utility;
-StartupWMClass=sessionsplit
+StartupWMClass=isolate
 
  

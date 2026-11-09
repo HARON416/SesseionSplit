@@ -6,12 +6,12 @@ import (
 )
 
 func TestOSCredentialStoreRoundTrip(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_KEYRING_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_KEYRING_TESTS=1 to test the desktop credential store")
+	if os.Getenv("ISOLATE_KEYRING_TESTS") != "1" {
+		t.Skip("set ISOLATE_KEYRING_TESTS=1 to test the desktop credential store")
 	}
 	store := newOSCredentialStore(t.TempDir())
 	const key = "temporary-integration-test"
-	const value = "SessionSplit temporary credential test"
+	const value = "Isolate temporary credential test"
 	if err := store.Set(key, value); err != nil {
 		t.Fatal("system keyring could not save a temporary credential", err)
 	}

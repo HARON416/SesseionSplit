@@ -14,6 +14,8 @@ jobs:
   installer:
     runs-on: windows-2025
     timeout-minutes: 45
+    permissions:
+      contents: write # Attach files to a private draft release if Actions storage is full.
     defaults:
       run:
         shell: pwsh
@@ -39,18 +41,35 @@ jobs:
       - name: Build and check installer
         run: ./build/windows/ci-installer.ps1
       - uses: actions/upload-artifact@v6
+        id: artifact
+        continue-on-error: true
         with:
-          name: sessionsplit-windows-amd64-${{ github.run_number }}
+          name: isolate-windows-amd64-${{ github.run_number }}
           path: |
-            bin/sessionsplit-amd64-installer.exe
+            bin/isolate-amd64-installer.exe
             bin/windows-build.json
             bin/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14
+      - name: Save download files in a draft release when artifact upload fails
+        if: steps.artifact.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $tag = "windows-test-$env:GITHUB_RUN_NUMBER-$env:GITHUB_RUN_ATTEMPT"
+          @'
+          Unsigned Windows x64 test installer for the current Isolate app.
+          Requires a supported installed browser (Chromium-based or Firefox).
+          The checksum and source revision are included in the attached files.
+          '@ | Set-Content -Encoding utf8 "$env:RUNNER_TEMP/windows-release-notes.md"
+          gh release create $tag bin/isolate-amd64-installer.exe bin/windows-build.json bin/SHA256SUMS.txt --draft --target $env:GITHUB_SHA --title "Windows test installer $env:GITHUB_RUN_NUMBER" --notes-file "$env:RUNNER_TEMP/windows-release-notes.md"
+          if ($LASTEXITCODE -ne 0) { throw 'Draft release upload failed' }
+          "Download files from the draft release **Windows test installer $env:GITHUB_RUN_NUMBER** in the repository Releases page." >> $env:GITHUB_STEP_SUMMARY
       - name: Explain artifact scope
         run: |
           @'
-          Download the sessionsplit-windows-amd64 artifact and run sessionsplit-amd64-installer.exe.
-          This unsigned test installer uses installed Chrome/Chromium or Brave.
-          It does not yet bundle the unfinished custom fingerprint engine.
+          Download the isolate-windows-amd64 artifact, or the files attached to the draft release if Actions storage is full.
+          Run isolate-amd64-installer.exe.
+          This unsigned test installer uses a supported installed browser (Chromium-based or Firefox).
           '@ >> $env:GITHUB_STEP_SUMMARY

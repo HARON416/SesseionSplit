@@ -21,13 +21,12 @@ import (
 )
 
 type BrowserProfile struct {
-	ID           string              `json:"id"`
-	Name         string              `json:"name"`
-	Browser      string              `json:"browser"`
-	CreatedAt    string              `json:"createdAt"`
-	LastOpenedAt string              `json:"lastOpenedAt"`
-	Settings     ProfileSettings     `json:"settings"`
-	Fingerprint  FingerprintIdentity `json:"fingerprint"`
+	ID           string          `json:"id"`
+	Name         string          `json:"name"`
+	Browser      string          `json:"browser"`
+	CreatedAt    string          `json:"createdAt"`
+	LastOpenedAt string          `json:"lastOpenedAt"`
+	Settings     ProfileSettings `json:"settings"`
 }
 
 type profileBrowser struct {
@@ -35,6 +34,7 @@ type profileBrowser struct {
 	launcher   *launcher.Launcher
 	cancel     context.CancelFunc
 	proxyClose func()
+	firefox    *firefoxBrowser
 }
 
 type ProfileService struct {
@@ -57,7 +57,10 @@ func newProfileService(root string) (*ProfileService, error) {
 		if err != nil {
 			return nil, fmt.Errorf("find profile storage: %w", err)
 		}
-		root = filepath.Join(dir, "sessionsplit")
+		root, err = defaultProfileRoot(dir)
+		if err != nil {
+			return nil, err
+		}
 	}
 	s := &ProfileService{root: root, profiles: []BrowserProfile{}, browsers: map[string]*profileBrowser{}, credentials: newOSCredentialStore(root)}
 	data, err := os.ReadFile(filepath.Join(root, "profiles.json"))
@@ -80,9 +83,6 @@ func newProfileService(root string) (*ProfileService, error) {
 	if s.profiles == nil {
 		s.profiles = []BrowserProfile{}
 	}
-	if err := s.migrateFingerprintIdentities(); err != nil {
-		return nil, err
-	}
 	return s, nil
 }
 
@@ -93,14 +93,25 @@ func (s *ProfileService) ListProfiles() []BrowserProfile {
 }
 
 func (s *ProfileService) CreateProfile(name string) (BrowserProfile, error) {
+	return s.createProfile(name, ProfileSettings{})
+}
+
+func (s *ProfileService) CreateProfileWithBrowser(name, engine, browserPath string) (BrowserProfile, error) {
+	return s.createProfile(name, profileBrowserSelection(engine, browserPath))
+}
+
+func (s *ProfileService) createProfile(name string, settings ProfileSettings) (BrowserProfile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
-		return BrowserProfile{}, errors.New("SessionSplit is closing")
+		return BrowserProfile{}, errors.New("Isolate is closing")
 	}
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return BrowserProfile{}, errors.New("Enter a profile name")
+	}
+	if err := validateBrowserSelection(settings); err != nil {
+		return BrowserProfile{}, err
 	}
 	for _, p := range s.profiles {
 		if strings.EqualFold(p.Name, name) {
@@ -111,12 +122,8 @@ func (s *ProfileService) CreateProfile(name string) (BrowserProfile, error) {
 	if _, err := rand.Read(id[:]); err != nil {
 		return BrowserProfile{}, fmt.Errorf("create profile ID: %w", err)
 	}
-	browser := browserLabelForEngine("chrome")
-	identity, err := newFingerprintIdentity()
-	if err != nil {
-		return BrowserProfile{}, err
-	}
-	p := BrowserProfile{ID: hex.EncodeToString(id[:]), Name: name, Browser: browser, CreatedAt: time.Now().UTC().Format(time.RFC3339Nano), Fingerprint: identity}
+	browser := browserLabelForEngine(settings.Engine)
+	p := BrowserProfile{ID: hex.EncodeToString(id[:]), Name: name, Browser: browser, CreatedAt: time.Now().UTC().Format(time.RFC3339Nano), Settings: settings}
 	next := append([]BrowserProfile{p}, s.profiles...)
 	if err := s.saveProfiles(next); err != nil {
 		return BrowserProfile{}, err
@@ -126,10 +133,29 @@ func (s *ProfileService) CreateProfile(name string) (BrowserProfile, error) {
 }
 
 func (s *ProfileService) RenameProfile(id, name string) (BrowserProfile, error) {
+	return s.updateProfile(id, name, nil)
+}
+
+func (s *ProfileService) UpdateProfile(id, name, engine, browserPath string) (BrowserProfile, error) {
+	selection := profileBrowserSelection(engine, browserPath)
+	return s.updateProfile(id, name, &selection)
+}
+
+func profileBrowserSelection(engine, browserPath string) ProfileSettings {
+	if engine == "" {
+		engine = "chrome"
+	}
+	if engine != "custom" {
+		browserPath = ""
+	}
+	return ProfileSettings{Engine: engine, BrowserPath: strings.TrimSpace(browserPath)}
+}
+
+func (s *ProfileService) updateProfile(id, name string, selection *ProfileSettings) (BrowserProfile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
-		return BrowserProfile{}, errors.New("SessionSplit is closing")
+		return BrowserProfile{}, errors.New("Isolate is closing")
 	}
 	index := -1
 	for i, profile := range s.profiles {
@@ -152,6 +178,20 @@ func (s *ProfileService) RenameProfile(id, name string) (BrowserProfile, error) 
 	}
 	next := append([]BrowserProfile{}, s.profiles...)
 	next[index].Name = name
+	if selection != nil {
+		current := profileBrowserSelection(next[index].Settings.Engine, next[index].Settings.BrowserPath)
+		if current != *selection {
+			if s.browsers[id] != nil {
+				return BrowserProfile{}, errors.New("Close this profile browser before changing browsers")
+			}
+			if err := validateBrowserSelection(*selection); err != nil {
+				return BrowserProfile{}, err
+			}
+			next[index].Settings.Engine = selection.Engine
+			next[index].Settings.BrowserPath = selection.BrowserPath
+			next[index].Browser = browserLabelForEngine(selection.Engine)
+		}
+	}
 	if err := s.saveProfiles(next); err != nil {
 		return BrowserProfile{}, err
 	}
@@ -193,7 +233,7 @@ func (s *ProfileService) DeleteProfile(id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
-		return errors.New("SessionSplit is closing")
+		return errors.New("Isolate is closing")
 	}
 	if !profileIDPattern.MatchString(id) {
 		return errors.New("Profile was not found")
@@ -216,8 +256,8 @@ func (s *ProfileService) DeleteProfile(id string) error {
 	}
 	if live := s.browsers[id]; live != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		if err := live.browser.Context(ctx).Close(); err != nil {
-			live.launcher.Kill()
+		if err := live.close(ctx); err != nil {
+			live.kill()
 		}
 		cancel()
 		live.cancel()
@@ -225,7 +265,9 @@ func (s *ProfileService) DeleteProfile(id string) error {
 			live.proxyClose()
 		}
 		// Deletion intentionally waits for Chrome to exit before removing its data.
-		live.launcher.Cleanup()
+		if live.launcher != nil {
+			live.launcher.Cleanup()
+		}
 		delete(s.browsers, id)
 	}
 	if err := os.RemoveAll(filepath.Join(s.root, "profiles", id)); err != nil {
@@ -280,7 +322,7 @@ func (s *ProfileService) recordProfileOpened(id string) (BrowserProfile, error) 
 // openProfile is called with mu held; timestamps are committed by OpenProfile.
 func (s *ProfileService) openProfile(ctx context.Context, id string) error {
 	if s.closed {
-		return errors.New("SessionSplit is closing")
+		return errors.New("Isolate is closing")
 	}
 	var profile BrowserProfile
 	found := false
@@ -298,14 +340,14 @@ func (s *ProfileService) openProfile(ctx context.Context, id string) error {
 		return err
 	}
 	if live := s.browsers[id]; live != nil {
-		if err := activateProfileBrowser(ctx, live.browser); err == nil {
+		if err := live.activate(ctx); err == nil {
 			return nil
 		}
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 		live.cancel()
-		live.launcher.Kill()
+		live.kill()
 		if live.proxyClose != nil {
 			live.proxyClose()
 		}
@@ -334,9 +376,9 @@ func (s *ProfileService) openProfile(ctx context.Context, id string) error {
 	}
 	live.proxyClose = closeProxy
 	s.browsers[id] = live
-	if err := activateProfileBrowser(ctx, live.browser); err != nil {
+	if err := live.activate(ctx); err != nil {
 		live.cancel()
-		live.launcher.Kill()
+		live.kill()
 		closeProxy()
 		delete(s.browsers, id)
 		return err
@@ -356,7 +398,7 @@ func activateProfileBrowser(ctx context.Context, browser *rod.Browser) error {
 			return (proto.TargetActivateTarget{TargetID: target.TargetID}).Call(client)
 		}
 	}
-	_, err = (proto.TargetCreateTarget{URL: "https://www.google.com/"}).Call(client)
+	_, err = (proto.TargetCreateTarget{URL: "https://www.instagram.com/"}).Call(client)
 	return err
 }
 
@@ -366,8 +408,8 @@ func (s *ProfileService) ServiceShutdown() error {
 	s.closed = true
 	for id, live := range s.browsers {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		if err := live.browser.Context(ctx).Close(); err != nil {
-			live.launcher.Kill()
+		if err := live.close(ctx); err != nil {
+			live.kill()
 		}
 		cancel()
 		live.cancel()

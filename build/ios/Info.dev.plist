@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key>
-    <string>sessionsplit</string>
+    <string>isolate</string>
     <key>CFBundleIdentifier</key>
-    <string>app.sessionsplit.desktop.dev</string>
+    <string>app.isolate.desktop.dev</string>
     <key>CFBundleName</key>
-    <string>SessionSplit (Dev)</string>
+    <string>Isolate (Dev)</string>
     <key>CFBundleDisplayName</key>
-    <string>SessionSplit (Dev)</string>
+    <string>Isolate (Dev)</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

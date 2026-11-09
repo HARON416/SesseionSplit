@@ -1,0 +1,14 @@
+Empty workspace illustration
+
+Title: Empty Folder
+Creator: andinur
+Source: https://www.flaticon.com/free-icon/empty-folder_11696719
+Original PNG: https://cdn-icons-png.flaticon.com/512/11696/11696719.png
+Downloaded: 2026-11-09
+Local asset: empty-workspace.png
+
+The source page identifies this as a free Flaticon asset for personal and
+commercial use with attribution. The empty state includes a visible link
+crediting andinur and Flaticon. The original PNG is bundled unchanged and
+displayed in grayscale with CSS to match the application's light/dark themes.
+Flaticon license information: https://www.flaticon.com/legal

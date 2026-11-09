@@ -6,9 +6,9 @@
 		"0409": {
 			"ProductVersion": "0.1.0",
 			"CompanyName": "My Company",
-			"FileDescription": "SessionSplit desktop application",
+			"FileDescription": "Isolate desktop application",
 			"LegalCopyright": "© 2026, My Company",
-			"ProductName": "SessionSplit",
+			"ProductName": "Isolate",
 			"Comments": "This is a comment"
 		}
 	}

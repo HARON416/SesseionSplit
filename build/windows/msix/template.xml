@@ -8,27 +8,27 @@
         AllowPromptForPassword="false">
     </Settings>
     <Installer
-        Path="sessionsplit"
+        Path="isolate"
         Arguments=""
-        InstallLocation="C:\Program Files\My Company\SessionSplit">
+        InstallLocation="C:\Program Files\My Company\Isolate">
     </Installer>
     <PackageInformation
-        PackageName="SessionSplit"
-        PackageDisplayName="SessionSplit"
+        PackageName="Isolate"
+        PackageDisplayName="Isolate"
         PublisherName="CN=My Company"
         PublisherDisplayName="My Company"
         Version="0.1.0.0"
-        PackageDescription="SessionSplit desktop application">
+        PackageDescription="Isolate desktop application">
         <Capabilities>
             <Capability Name="runFullTrust" />
             
         </Capabilities>
         <Applications>
             <Application
-                Id="app.sessionsplit.desktop"
-                Description="SessionSplit desktop application"
-                DisplayName="SessionSplit"
-                ExecutableName="sessionsplit"
+                Id="app.isolate.desktop"
+                Description="Isolate desktop application"
+                DisplayName="Isolate"
+                ExecutableName="isolate"
                 EntryPoint="Windows.FullTrustApplication">
                 
             </Application>
@@ -41,13 +41,13 @@
         </Dependencies>
         <Properties>
             <Framework>false</Framework>
-            <DisplayName>SessionSplit</DisplayName>
+            <DisplayName>Isolate</DisplayName>
             <PublisherDisplayName>My Company</PublisherDisplayName>
-            <Description>SessionSplit desktop application</Description>
+            <Description>Isolate desktop application</Description>
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>
     </PackageInformation>
-    <SaveLocation PackagePath="sessionsplit.msix" />
+    <SaveLocation PackagePath="isolate.msix" />
     <PackageIntegrity>
         <CertificatePath></CertificatePath>
     </PackageIntegrity>

@@ -1,0 +1,14 @@
+Settings drawer section icons
+
+Source: https://phosphoricons.com/
+Repository: https://github.com/phosphor-icons/core
+Weight: regular
+Downloaded: 2026-11-09
+
+settings-globe-simple.svg: assets/regular/globe-simple.svg
+settings-browsers.svg: assets/regular/browsers.svg
+settings-pulse.svg: assets/regular/pulse.svg
+
+The SVG files are bundled unchanged and rendered as CSS masks for theme colors.
+The MIT license is included in PHOSPHOR-LICENSE.txt.
+The close icon path was supplied by the user.

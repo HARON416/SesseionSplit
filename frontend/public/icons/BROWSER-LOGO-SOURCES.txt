@@ -1,0 +1,22 @@
+Browser logos bundled for identifying the selected browser on profile cards.
+Downloaded 2026-11-09. Images are unmodified 64px PNG exports, rendered at 32px.
+No network requests are made to fetch logos while the application runs.
+
+Chrome, Chromium, Brave, Edge, Vivaldi, Opera, Opera GX, and Firefox:
+https://github.com/alrra/browser-logos
+Source pattern: src/<browser>/<browser>_64x64.png
+Local pattern: browser-<browser>.png
+The collection's notice is included in BROWSER-LOGOS-LICENSE.txt.
+Browser logos and trademarks belong to their respective owners; the collection's
+MIT license applies to its other contents, not to ownership of these marks.
+Ungoogled Chromium uses the upstream Chromium logo.
+
+Thorium:
+https://github.com/Alex313031/thorium/blob/main/logos/NEW/product_logo_64.png
+Local file: browser-thorium.png
+Original editable artwork: browser-thorium-source.svg, downloaded from
+https://github.com/Alex313031/thorium/blob/main/logos/NEW/product_logo.svg
+This artwork is GPL-3.0-only. The original scope/copyright notice and complete
+license text are included in THORIUM-LOGO-NOTICE.txt and THORIUM-LOGO-LICENSE.txt.
+
+Custom or unrecognized browsers use an application-native generic browser icon.

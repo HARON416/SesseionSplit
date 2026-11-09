@@ -14,6 +14,7 @@ import (
 type ProfileSettings struct {
 	Proxy       ProxySettings `json:"proxy"`
 	Engine      string        `json:"engine"`
+	BrowserPath string        `json:"browserPath,omitempty"`
 	Language    string        `json:"language"`
 	Timezone    string        `json:"timezone"`
 	Width       int           `json:"width"`
@@ -41,8 +42,8 @@ func validateProfileSettings(settings ProfileSettings) error {
 	if err := validateProxySettings(settings.Proxy); err != nil {
 		return err
 	}
-	if settings.Engine != "" && settings.Engine != "chrome" && settings.Engine != "brave" {
-		return errors.New("Choose Chrome or Brave as the browser")
+	if err := validateBrowserSelection(settings); err != nil {
+		return err
 	}
 	if settings.Language != "" && !languagePattern.MatchString(settings.Language) {
 		return errors.New("Enter a language code such as en-US")
@@ -91,7 +92,7 @@ func (s *ProfileService) UpdateProfileSettings(id string, update SettingsUpdate)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
-		return BrowserProfile{}, errors.New("SessionSplit is closing")
+		return BrowserProfile{}, errors.New("Isolate is closing")
 	}
 	index := -1
 	for i, p := range s.profiles {

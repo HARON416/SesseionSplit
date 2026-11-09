@@ -111,15 +111,16 @@ func TestEngineResolutionAndCapabilities(t *testing.T) {
 }
 
 func TestEngineEnvironmentFirstScriptsAndNewTabs(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_BROWSER_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_BROWSER_TESTS=1 for installed-browser integration")
+	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
+		t.Skip("set ISOLATE_BROWSER_TESTS=1 for installed-browser integration")
 	}
-	for _, engineID := range []string{"chrome", "brave"} {
+	for _, definition := range browserCatalog {
+		engineID := definition.id
+		if engineID == "firefox" {
+			continue
+		}
 		t.Run(engineID, func(t *testing.T) {
-			override := ""
-			if engineID == "brave" {
-				override = os.Getenv("SESSIONSPLIT_BRAVE_TEST_BINARY")
-			}
+			override := os.Getenv("ISOLATE_" + strings.ToUpper(strings.ReplaceAll(engineID, "-", "_")) + "_TEST_BINARY")
 			if findEnginePath(engineID) == "" && override == "" {
 				t.Skipf("%s is not installed; no download or substituted browser", engineID)
 			}
@@ -130,7 +131,7 @@ func TestEngineEnvironmentFirstScriptsAndNewTabs(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 			defer cancel()
 			cfg := launchConfig{Profile: BrowserProfile{ID: strings.Repeat("a", 32)}, Root: t.TempDir(), Headless: true,
-				Settings: ProfileSettings{Engine: engineID, Language: "fr-FR", Timezone: "Pacific/Honolulu", Permissions: "block", Width: 800, Height: 600}}
+				Settings: ProfileSettings{Engine: engineID, BrowserPath: override, Language: "fr-FR", Timezone: "Pacific/Honolulu", Permissions: "block", Width: 800, Height: 600}}
 			for restart := 0; restart < 2; restart++ {
 				func() {
 					live, err := engine.Launch(ctx, cfg)
@@ -230,15 +231,16 @@ func TestEngineLaunchPolicyAndStoragePaths(t *testing.T) {
 }
 
 func TestEngineAuthenticatedProxyRoutesBrowserTraffic(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_BROWSER_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_BROWSER_TESTS=1 for browser integration")
+	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
+		t.Skip("set ISOLATE_BROWSER_TESTS=1 for browser integration")
 	}
-	for _, id := range []string{"chrome", "brave"} {
+	for _, definition := range browserCatalog {
+		id := definition.id
+		if id == "firefox" {
+			continue
+		}
 		t.Run(id, func(t *testing.T) {
-			override := ""
-			if id == "brave" {
-				override = os.Getenv("SESSIONSPLIT_BRAVE_TEST_BINARY")
-			}
+			override := os.Getenv("ISOLATE_" + strings.ToUpper(strings.ReplaceAll(id, "-", "_")) + "_TEST_BINARY")
 			if override == "" && findEnginePath(id) == "" {
 				t.Skip("browser not installed")
 			}
@@ -279,7 +281,7 @@ func TestEngineAuthenticatedProxyRoutesBrowserTraffic(t *testing.T) {
 			defer closeProxy()
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
-			live, err := engine.Launch(ctx, launchConfig{Profile: BrowserProfile{ID: strings.Repeat("b", 32)}, Settings: ProfileSettings{Engine: id}, Root: t.TempDir(), Headless: true, ProxyURL: bridge})
+			live, err := engine.Launch(ctx, launchConfig{Profile: BrowserProfile{ID: strings.Repeat("b", 32)}, Settings: ProfileSettings{Engine: id, BrowserPath: override}, Root: t.TempDir(), Headless: true, ProxyURL: bridge})
 			if err != nil {
 				t.Fatal(err)
 			}

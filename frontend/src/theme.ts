@@ -1,9 +1,9 @@
 export type Theme = 'light' | 'dark';
-const storageKey = 'sessionsplit-theme';
+const storageKey = 'isolate-theme';
 
 export function readTheme(): Theme {
   try {
-    const saved = localStorage.getItem(storageKey);
+    const saved = localStorage.getItem(storageKey) ?? localStorage.getItem('sessionsplit-theme');
     if (saved === 'light' || saved === 'dark') return saved;
   } catch { /* Use system preference when storage is unavailable. */ }
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

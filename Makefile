@@ -6,16 +6,19 @@ WAILS_VERSION := $(shell awk '$$1 == "require" && $$2 == "github.com/wailsapp/wa
 WAILS_CLI := .tools/bin/wails3
 VITE_PORT ?= $(if $(WAILS_VITE_PORT),$(WAILS_VITE_PORT),9246)
 
-.PHONY: help dev run build check doctor install-cli
+.PHONY: help dev run build clean check doctor install-cli
 
 help:
-	@printf '%s\n' 'SessionSplit commands:' '  make dev          Start the desktop app with hot reload' '  make run          Alias for make dev' '  make build        Build the desktop executable' '  make check        Check Svelte and TypeScript' '  make doctor       Check Wails dependencies' '  make install-cli  Install the pinned Wails CLI locally'
+	@printf '%s\n' 'Isolate commands:' '  make dev          Start the desktop app with hot reload' '  make run          Alias for make dev' '  make build        Build the desktop executable' '  make clean        Remove generated executables and packages from bin/' '  make check        Check Svelte and TypeScript' '  make doctor       Check Wails dependencies' '  make install-cli  Install the pinned Wails CLI locally'
 
 dev run: $(WAILS_CLI)
 	wails3 dev -config ./build/config.yml -port $(VITE_PORT)
 
 build: $(WAILS_CLI)
 	wails3 build
+
+clean:
+	rm -rf -- bin
 
 check:
 	npm --prefix frontend run check

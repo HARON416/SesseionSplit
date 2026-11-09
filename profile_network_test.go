@@ -4,9 +4,72 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestUnsavedConnectionCredentialsDoNotChangeProfiles(t *testing.T) {
+	service, err := newProfileService(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := &memoryCredentialStore{values: map[string]string{"saved": "old-secret", "other-profile": "unrelated-secret"}}
+	service.credentials = store
+	profile, err := service.CreateProfile("Work")
+	if err != nil {
+		t.Fatal(err)
+	}
+	service.profiles[0].Settings.Proxy = ProxySettings{Mode: "http", Host: "saved.example", Port: 80, CredentialID: "saved", HasPassword: true}
+	if err := service.saveProfiles(service.profiles); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(filepath.Join(service.root, "profiles.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved := service.ListProfiles()
+	for _, test := range []struct{ action, password, want string }{
+		{"keep", "", "old-secret"}, {"replace", "new-secret", "new-secret"}, {"remove", "", ""},
+	} {
+		t.Run(test.action, func(t *testing.T) {
+			draft := ProxySettings{Mode: "socks5", Host: "draft.example", Port: 1080, Username: "draft-user", CredentialID: "other-profile", HasPassword: true}
+			settings, credentials, err := service.prepareConnectionTest(profile.ID, SettingsUpdate{Settings: ProfileSettings{Proxy: draft}, Password: test.password, PasswordAction: test.action})
+			if err != nil {
+				t.Fatal(err)
+			}
+			password, err := proxyPassword(settings, credentials)
+			if err != nil || password != test.want || settings.Host != draft.Host || settings.Port != draft.Port || settings.Username != draft.Username {
+				t.Fatal("connection test used different inputs or another profile's credentials", settings, err)
+			}
+			if !reflect.DeepEqual(service.ListProfiles(), saved) || len(store.values) != 2 || store.values["saved"] != "old-secret" {
+				t.Fatal("connection test changed saved settings or keyring credentials")
+			}
+			after, err := os.ReadFile(filepath.Join(service.root, "profiles.json"))
+			if err != nil || string(after) != string(before) {
+				t.Fatal("connection test changed the profile registry", err)
+			}
+		})
+	}
+	for _, update := range []SettingsUpdate{
+		{Settings: ProfileSettings{Proxy: ProxySettings{Mode: "ftp"}}},
+		{PasswordAction: "unknown"}, {PasswordAction: "replace"}, {PasswordAction: "replace", Password: strings.Repeat("x", 256)},
+	} {
+		if _, _, err := service.prepareConnectionTest(profile.ID, update); err == nil {
+			t.Fatal("invalid connection draft accepted")
+		}
+	}
+	if _, _, err := service.prepareConnectionTest("missing", SettingsUpdate{}); err == nil {
+		t.Fatal("unknown profile accepted")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := service.TestProfileConnection(ctx, profile.ID, SettingsUpdate{}); err == nil {
+		t.Fatal("canceled connection test succeeded")
+	}
+}
 
 func TestConnectionDiagnosticReportsOnlyObservedRoute(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

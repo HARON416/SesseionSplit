@@ -18,6 +18,54 @@ import (
 	"github.com/go-rod/rod/lib/proto"
 )
 
+func TestProfilesWithRetiredFingerprintDataPreserveSessions(t *testing.T) {
+	root := t.TempDir()
+	registry := filepath.Join(root, "profiles.json")
+	saved := `[{"id":"0123456789abcdef0123456789abcdef","name":"Work","browser":"Chrome","createdAt":"2026-11-08T10:00:00Z","lastOpenedAt":"2026-11-09T10:00:00Z","settings":{"engine":"chrome","language":"en-US","timezone":"Africa/Nairobi"},"fingerprint":{"schemaVersion":1,"seed":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}]`
+	if err := os.WriteFile(registry, []byte(saved), 0600); err != nil {
+		t.Fatal(err)
+	}
+	sessionPath := filepath.Join(root, "profiles", "0123456789abcdef0123456789abcdef", "browser", "session-marker")
+	if err := os.MkdirAll(filepath.Dir(sessionPath), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(sessionPath, []byte("saved login"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	service, err := newProfileService(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := BrowserProfile{
+		ID: "0123456789abcdef0123456789abcdef", Name: "Work", Browser: "Chrome",
+		CreatedAt: "2026-11-08T10:00:00Z", LastOpenedAt: "2026-11-09T10:00:00Z",
+		Settings: ProfileSettings{Engine: "chrome", Language: "en-US", Timezone: "Africa/Nairobi"},
+	}
+	if profiles := service.ListProfiles(); len(profiles) != 1 || profiles[0] != want {
+		t.Fatal("loading changed saved profile metadata", profiles)
+	}
+	if data, err := os.ReadFile(registry); err != nil || string(data) != saved {
+		t.Fatal("loading rewrote the profile registry", err)
+	}
+	if _, err := service.RenameProfile(want.ID, "Renamed"); err != nil {
+		t.Fatal(err)
+	}
+	want.Name = "Renamed"
+	reopened, err := newProfileService(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if profiles := reopened.ListProfiles(); len(profiles) != 1 || profiles[0] != want {
+		t.Fatal("saving changed profile metadata", profiles)
+	}
+	if data, err := os.ReadFile(registry); err != nil || strings.Contains(string(data), `"fingerprint"`) {
+		t.Fatal("saving retained retired fingerprint data", err)
+	}
+	if data, err := os.ReadFile(sessionPath); err != nil || string(data) != "saved login" {
+		t.Fatal("profile update changed saved browser data", err)
+	}
+}
+
 func TestProfilesPersistInNewestFirstOrder(t *testing.T) {
 	root := t.TempDir()
 	s, err := newProfileService(root)
@@ -182,7 +230,7 @@ func TestRenameProfileFailuresPreserveRegistry(t *testing.T) {
 	if err := service.ServiceShutdown(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.RenameProfile(first.ID, "Home"); err == nil || err.Error() != "SessionSplit is closing" {
+	if _, err := service.RenameProfile(first.ID, "Home"); err == nil || err.Error() != "Isolate is closing" {
 		t.Fatal("rename accepted after shutdown", err)
 	}
 	if !reflect.DeepEqual(service.ListProfiles(), want) {
@@ -218,8 +266,8 @@ func TestProfileFailuresPreserveSavedData(t *testing.T) {
 }
 
 func TestBrowserProfilesKeepSeparatePersistentCookies(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_BROWSER_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_BROWSER_TESTS=1 to run Chrome integration")
+	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
+		t.Skip("set ISOLATE_BROWSER_TESTS=1 to run Chrome integration")
 	}
 	chrome, ok := launcher.LookPath()
 	if !ok {
@@ -308,8 +356,8 @@ func TestBrowserProfilesKeepSeparatePersistentCookies(t *testing.T) {
 }
 
 func TestBrowserProfilesIsolateSiteStorageAndDownloads(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_BROWSER_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_BROWSER_TESTS=1 to run Chrome integration")
+	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
+		t.Skip("set ISOLATE_BROWSER_TESTS=1 to run Chrome integration")
 	}
 	chrome, ok := launcher.LookPath()
 	if !ok {
@@ -588,8 +636,8 @@ func TestDeleteProfileSaveFailurePreservesData(t *testing.T) {
 }
 
 func TestDeleteRunningProfileKeepsOtherProfiles(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_BROWSER_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_BROWSER_TESTS=1 to run Chrome integration")
+	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
+		t.Skip("set ISOLATE_BROWSER_TESTS=1 to run Chrome integration")
 	}
 	chrome, ok := launcher.LookPath()
 	if !ok {
@@ -717,8 +765,8 @@ func TestLastOpenedTimestampPersistsWithoutChangingOtherProfiles(t *testing.T) {
 }
 
 func TestLastOpenedTracksLaunchingAndFocusingBrowser(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_BROWSER_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_BROWSER_TESTS=1 to run Chrome integration")
+	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
+		t.Skip("set ISOLATE_BROWSER_TESTS=1 to run Chrome integration")
 	}
 	chrome, ok := launcher.LookPath()
 	if !ok {

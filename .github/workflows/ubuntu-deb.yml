@@ -1,0 +1,70 @@
+name: Ubuntu DEB
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ubuntu-deb-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deb:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      CGO_ENABLED: '1'
+      GOARCH: amd64
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install Ubuntu build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
+      - name: Install pinned Wails CLI
+        run: |
+          version=$(awk '$1 == "github.com/wailsapp/wails/v3" {print $2; exit}' go.mod)
+          test -n "$version"
+          go install "github.com/wailsapp/wails/v3/cmd/wails3@$version"
+      - name: Check and package
+        run: |
+          npm --prefix frontend ci
+          npm --prefix frontend run check
+          npm --prefix frontend test
+          go test ./...
+          wails3 package GOOS=linux ARCH=amd64
+          dpkg-deb --info bin/*.deb
+          dpkg-deb --contents bin/*.deb
+          cd bin
+          sha256sum ./*.deb > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v6
+        id: artifact
+        continue-on-error: true
+        with:
+          name: isolate-ubuntu-amd64-${{ github.run_number }}
+          path: |
+            bin/*.deb
+            bin/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save files in a draft release when artifact upload fails
+        if: steps.artifact.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "ubuntu-test-$GITHUB_RUN_NUMBER-$GITHUB_RUN_ATTEMPT" bin/*.deb bin/SHA256SUMS.txt --draft --target "$GITHUB_SHA" --title "Ubuntu test package $GITHUB_RUN_NUMBER" --notes "Unsigned Ubuntu 24.04+ amd64 DEB. Requires a supported installed browser (Chromium-based or Firefox)."

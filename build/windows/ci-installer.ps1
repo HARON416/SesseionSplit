@@ -30,25 +30,29 @@ try {
     $env:GOBIN = $tools
     Invoke-Checked go @('install', "github.com/wailsapp/wails/v3/cmd/wails3@$version")
     $wails = Join-Path $tools 'wails3.exe'
+    Invoke-Checked $wails @('generate', 'icons', '-input', 'build/appicon.png', '-windowsfilename', 'build/windows/icon.ico', '-macfilename', 'build/darwin/icons.icns')
     $syso = Join-Path $root 'wails_windows_amd64.syso'
     try {
         Invoke-Checked $wails @('generate', 'syso', '-arch', 'amd64', '-icon', 'build/windows/icon.ico', '-manifest', 'build/windows/wails.exe.manifest', '-info', 'build/windows/info.json', '-out', $syso)
-        Invoke-Checked go @('build', '-tags', 'production', '-trimpath', '-buildvcs=false', '-ldflags=-w -s -H windowsgui', '-o', 'bin/sessionsplit.exe', '.')
+        Invoke-Checked go @('build', '-tags', 'production', '-trimpath', '-buildvcs=false', '-ldflags=-w -s -H windowsgui', '-o', 'bin/isolate.exe', '.')
     } finally {
         if (Test-Path $syso) { Remove-Item -LiteralPath $syso }
     }
+
+    $binary = (Resolve-Path -LiteralPath (Join-Path (Join-Path $root 'bin') 'isolate.exe')).Path
+    if ((Get-Item -LiteralPath $binary).Length -eq 0) { throw 'The application executable is empty.' }
 
     $nsis = Join-Path $root 'build/windows/nsis'
     Invoke-Checked $wails @('generate', 'webview2bootstrapper', '-dir', $nsis)
     Push-Location $nsis
     try {
-        Invoke-Checked makensis @('/DINFO_PROJECTNAME=sessionsplit', '/DINFO_PRODUCTNAME=SessionSplit', '/DINFO_COMPANYNAME=SessionSplit', '/DPRODUCT_EXECUTABLE=sessionsplit.exe', '/DWAILS_INSTALL_SCOPE=user', '/DREQUEST_EXECUTION_LEVEL=user', "/DARG_WAILS_AMD64_BINARY=$root/bin/sessionsplit.exe", 'project.nsi')
+        Invoke-Checked makensis @('/DINFO_PROJECTNAME=isolate', '/DINFO_PRODUCTNAME=Isolate', '/DINFO_COMPANYNAME=Isolate', '/DPRODUCT_EXECUTABLE=isolate.exe', '/DWAILS_INSTALL_SCOPE=user', '/DREQUEST_EXECUTION_LEVEL=user', "/DARG_WAILS_AMD64_BINARY=$binary", 'project.nsi')
     } finally { Pop-Location }
 
-    $installer = Join-Path $root 'bin/sessionsplit-amd64-installer.exe'
+    $installer = Join-Path $root 'bin/isolate-amd64-installer.exe'
     if (-not (Test-Path $installer)) { throw 'NSIS did not produce the expected installer.' }
     $hash = (Get-FileHash -Algorithm SHA256 $installer).Hash.ToLowerInvariant()
-    "$hash  sessionsplit-amd64-installer.exe" | Set-Content -Encoding ascii bin/SHA256SUMS.txt
+    "$hash  isolate-amd64-installer.exe" | Set-Content -Encoding ascii bin/SHA256SUMS.txt
     $commit = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0) { throw 'Cannot record application source revision.' }
     @{
@@ -59,7 +63,6 @@ try {
         wails_version = $version
         installer_sha256 = $hash
         signed = $false
-        bundled_custom_engine = $false
-        browser_requirement = 'Installed Chrome/Chromium or Brave'
+        browser_requirement = 'Supported installed browser (Chromium-based or Firefox)'
     } | ConvertTo-Json | Set-Content -Encoding utf8 bin/windows-build.json
 } finally { Pop-Location }

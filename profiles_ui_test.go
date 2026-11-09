@@ -45,8 +45,8 @@ func (s *uiCredentialStore) Delete(key string) error {
 }
 
 func TestProfilesUI(t *testing.T) {
-	if os.Getenv("SESSIONSPLIT_BROWSER_TESTS") != "1" {
-		t.Skip("set SESSIONSPLIT_BROWSER_TESTS=1 to run browser integration")
+	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
+		t.Skip("set ISOLATE_BROWSER_TESTS=1 to run browser integration")
 	}
 	service, err := newProfileService(t.TempDir())
 	if err != nil {
@@ -67,6 +67,7 @@ func TestProfilesUI(t *testing.T) {
 	var failSettings atomic.Bool
 	var settingsRunning atomic.Bool
 	var connectionTests atomic.Int32
+	var testedConnection atomic.Value
 	files := http.FileServer(http.Dir("frontend/dist"))
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/wails/runtime" {
@@ -89,7 +90,13 @@ func TestProfilesUI(t *testing.T) {
 		case methodID("ListProfiles"):
 			result = service.ListProfiles()
 		case methodID("ListBrowserEngines"):
-			result = []EngineInfo{{ID: "chrome", Name: "Chrome / Chromium", Available: true, Version: "Test browser", FingerprintProtection: "Standard browser protections; no added fingerprint protection"}, {ID: "brave", Name: "Brave", Available: false, FingerprintProtection: "Native Brave fingerprinting protections"}}
+			engines := []EngineInfo{}
+			for _, browser := range browserCatalog {
+				info := engineDetails(browser.id)
+				info.Available = browser.id == "chrome" || browser.id == "edge" || browser.id == "custom" || browser.id == "firefox"
+				engines = append(engines, info)
+			}
+			result = engines
 		case methodID("GetProfileSettings"), methodID("CloseProfile"), methodID("TestProfileConnection"), methodID("UpdateProfileSettings"):
 			var id string
 			if len(call.Args.Args) == 0 || json.Unmarshal(call.Args.Args[0], &id) != nil {
@@ -105,8 +112,17 @@ func TestProfilesUI(t *testing.T) {
 			case methodID("CloseProfile"):
 				settingsRunning.Store(false)
 			case methodID("TestProfileConnection"):
-				connectionTests.Add(1)
-				result = ConnectionDiagnostic{IP: "203.0.113.25", Route: "HTTP proxy", CheckedAt: time.Now().UTC().Format(time.RFC3339), DurationMS: 42, DNSStatus: "unverified", WebRTCStatus: "unverified"}
+				var update SettingsUpdate
+				if len(call.Args.Args) != 2 || json.Unmarshal(call.Args.Args[1], &update) != nil {
+					http.Error(w, "invalid connection test", 400)
+					return
+				}
+				_, _, callErr = service.prepareConnectionTest(id, update)
+				if callErr == nil {
+					connectionTests.Add(1)
+					testedConnection.Store(update)
+					result = ConnectionDiagnostic{IP: "203.0.113.25", Route: "HTTP proxy", CheckedAt: time.Now().UTC().Format(time.RFC3339), DurationMS: 42, DNSStatus: "unverified", WebRTCStatus: "unverified"}
+				}
 			case methodID("UpdateProfileSettings"):
 				var update SettingsUpdate
 				if len(call.Args.Args) != 2 || json.Unmarshal(call.Args.Args[1], &update) != nil {
@@ -123,16 +139,16 @@ func TestProfilesUI(t *testing.T) {
 				}
 				result, callErr = service.UpdateProfileSettings(id, update)
 			}
-		case methodID("CreateProfile"):
-			var name string
-			if len(call.Args.Args) != 1 || json.Unmarshal(call.Args.Args[0], &name) != nil {
+		case methodID("CreateProfileWithBrowser"):
+			var name, engine, browserPath string
+			if len(call.Args.Args) != 3 || json.Unmarshal(call.Args.Args[0], &name) != nil || json.Unmarshal(call.Args.Args[1], &engine) != nil || json.Unmarshal(call.Args.Args[2], &browserPath) != nil {
 				http.Error(w, "invalid name", 400)
 				return
 			}
-			result, callErr = service.CreateProfile(name)
-		case methodID("RenameProfile"):
-			var id, name string
-			if len(call.Args.Args) != 2 || json.Unmarshal(call.Args.Args[0], &id) != nil || json.Unmarshal(call.Args.Args[1], &name) != nil {
+			result, callErr = service.CreateProfileWithBrowser(name, engine, browserPath)
+		case methodID("UpdateProfile"):
+			var id, name, engine, browserPath string
+			if len(call.Args.Args) != 4 || json.Unmarshal(call.Args.Args[0], &id) != nil || json.Unmarshal(call.Args.Args[1], &name) != nil || json.Unmarshal(call.Args.Args[2], &engine) != nil || json.Unmarshal(call.Args.Args[3], &browserPath) != nil {
 				http.Error(w, "invalid rename arguments", 400)
 				return
 			}
@@ -140,7 +156,11 @@ func TestProfilesUI(t *testing.T) {
 				http.Error(w, "rename /private/storage/profiles.json: permission denied", 500)
 				return
 			}
-			result, callErr = service.RenameProfile(id, name)
+			if settingsRunning.Load() && engine != "chrome" {
+				http.Error(w, "Close this profile browser before changing browsers", 400)
+				return
+			}
+			result, callErr = service.UpdateProfile(id, name, engine, browserPath)
 		case methodID("DeleteProfile"):
 			var id string
 			if len(call.Args.Args) != 1 || json.Unmarshal(call.Args.Args[0], &id) != nil {
@@ -204,21 +224,55 @@ func TestProfilesUI(t *testing.T) {
 	if len(service.ListProfiles()) != 0 {
 		t.Fatal("initial workspace was not empty")
 	}
+	wait(`() => document.querySelector('#empty-workspace-title')?.textContent==='No profiles yet' && document.querySelector('.empty-illustration img')?.naturalWidth>0`)
+	if emptyDir := os.Getenv("ISOLATE_UI_ARTIFACTS"); emptyDir != "" {
+		if err := os.MkdirAll(emptyDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		for _, theme := range []string{"light", "dark"} {
+			page.MustEval(`(theme) => { if(document.documentElement.dataset.theme!==theme) document.querySelector('.theme-toggle').click(); }`, theme)
+			for _, width := range []int{1200, 480} {
+				page.MustSetViewport(width, 800, 1, false)
+				wait(`() => document.documentElement.scrollWidth<=innerWidth && document.querySelector('#empty-create-profile').getBoundingClientRect().bottom<innerHeight`)
+				capture, err := page.Screenshot(false, &proto.PageCaptureScreenshot{Format: proto.PageCaptureScreenshotFormatPng})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(emptyDir, "empty-"+theme+"-"+strconv.Itoa(width)+".png"), capture, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+		page.MustSetViewport(1200, 800, 1, false)
+	}
 	page.KeyActions().Press(input.ControlLeft).Type(input.KeyN).Release(input.ControlLeft).MustDo()
 	wait(`() => document.querySelector('dialog').open && document.querySelector('#profile-dialog-title')?.textContent==='Add new profile' && document.activeElement.id==='profile-name' && document.querySelector('#profile-name-hint')?.textContent.includes('separate') && document.querySelector('.dialog-actions .secondary').textContent==='Cancel'`)
 	page.Keyboard.MustType(input.Escape)
 	wait(`() => !document.querySelector('dialog').open && document.activeElement.classList.contains('add-profile')`)
+	page.MustElement("#empty-create-profile").MustClick()
+	wait(`() => document.querySelector('dialog').open && document.activeElement.id==='profile-name'`)
+	page.Keyboard.MustType(input.Escape)
+	wait(`() => !document.querySelector('dialog').open && document.activeElement.id==='empty-create-profile'`)
 	create := func(name string) {
 		t.Helper()
 		page.MustElement(".add-profile").MustClick()
 		page.MustElement("#profile-name").MustInput(name)
+		wait(`() => !document.querySelector('#profile-engine').disabled`)
 		page.MustElement(".dialog-actions .primary").MustClick()
 		wait(`() => !document.querySelector('dialog').open`)
 	}
-	create("Personal")
+	page.MustElement(".add-profile").MustClick()
+	page.MustElement("#profile-name").MustInput("Personal")
+	wait(`() => !document.querySelector('#profile-engine').disabled`)
+	page.MustElement("#profile-engine").MustSelect("Firefox")
+	page.MustElement(".dialog-actions .primary").MustClick()
+	wait(`() => !document.querySelector('dialog').open && document.querySelector('.profile-card .browser-name')?.textContent==='Firefox' && document.querySelector('.profile-brand img')?.getAttribute('src')==='/icons/browser-firefox.png'`)
+	if profile := service.ListProfiles()[0]; profile.Settings.Engine != "firefox" {
+		t.Fatal("new profile did not save the selected browser")
+	}
 	create("Work")
 	wait(`() => document.querySelector('.profile-card h2')?.textContent==='Work' && document.activeElement.getAttribute('aria-label')==='Open Work'`)
-	wait(`() => document.querySelectorAll('.profile-brand svg').length===2 && document.querySelectorAll('.creation-date time').length===2 && !document.querySelector('.open-profile svg')`)
+	wait(`() => document.querySelectorAll('.profile-brand img').length===2 && [...document.querySelectorAll('.profile-brand img')].every(image => image.naturalWidth>0) && document.querySelectorAll('.creation-date time').length===2 && !document.querySelector('.open-profile svg')`)
 	saved := service.ListProfiles()
 	if len(saved) != 2 {
 		t.Fatal("profile cards were not saved")
@@ -283,8 +337,25 @@ func TestProfilesUI(t *testing.T) {
 	editWork := func() {
 		t.Helper()
 		page.MustElement(".edit-profile[aria-label='Edit Work']").MustClick()
-		wait(`() => document.querySelector('dialog').open && document.querySelector('#profile-dialog-title')?.textContent==='Edit profile name' && document.activeElement.id==='profile-name' && document.querySelector('#profile-name').value==='Work' && document.querySelector('#profile-name').selectionStart===0 && document.querySelector('#profile-name').selectionEnd===4`)
+		wait(`() => document.querySelector('dialog').open && document.querySelector('#profile-dialog-title')?.textContent==='Edit profile' && !document.querySelector('#profile-engine').disabled && document.activeElement.id==='profile-name' && document.querySelector('#profile-name').value==='Work' && document.querySelector('#profile-name').selectionStart===0 && document.querySelector('#profile-name').selectionEnd===4`)
 	}
+	editWork()
+	page.MustElement("#profile-engine").MustSelect("Firefox")
+	wait(`() => !document.querySelector('.dialog-actions .primary').disabled`)
+	settingsRunning.Store(true)
+	page.MustElement(".dialog-actions .primary").MustClick()
+	wait(`() => document.querySelector('#profile-error')?.textContent.includes('Close this profile’s browser') && !document.querySelector('.dialog-actions .primary').disabled`)
+	if service.ListProfiles()[0].Settings.Engine != "chrome" {
+		t.Fatal("blocked browser edit changed the profile")
+	}
+	settingsRunning.Store(false)
+	page.MustElement(".dialog-actions .primary").MustClick()
+	wait(`() => !document.querySelector('dialog').open && document.querySelector('.profile-card .browser-name')?.textContent==='Firefox' && document.querySelector('.profile-brand img')?.getAttribute('src')==='/icons/browser-firefox.png'`)
+	editWork()
+	wait(`() => document.querySelector('#profile-engine').value==='firefox'`)
+	page.MustElement("#profile-engine").MustSelect("Chrome / Chromium")
+	page.MustElement(".dialog-actions .primary").MustClick()
+	wait(`() => !document.querySelector('dialog').open && document.querySelector('.profile-brand img')?.getAttribute('src')==='/icons/browser-chrome.png'`)
 	editWork()
 	page.MustElement("#profile-name").MustSelectAllText().MustInput("   ")
 	wait(`() => document.querySelector('.dialog-actions .primary').disabled`)
@@ -311,7 +382,7 @@ func TestProfilesUI(t *testing.T) {
 	page.MustElement("#profile-name").MustSelectAllText().MustInput("Office")
 	failRename.Store(true)
 	page.MustElement(".dialog-actions .primary").MustClick()
-	wait(`() => document.querySelector('dialog [role=alert]')?.textContent.includes('Could not save the profile name. Check available disk space and folder permissions, then try again.') && !document.body.textContent.includes('/private/storage') && document.querySelector('#profile-name').value==='Office' && document.querySelector('.profile-card h2').textContent==='Work' && !document.querySelector('.dialog-actions .primary').disabled`)
+	wait(`() => document.querySelector('dialog [role=alert]')?.textContent.includes('Could not save the profile. Check available disk space and folder permissions, then try again.') && !document.body.textContent.includes('/private/storage') && document.querySelector('#profile-name').value==='Office' && document.querySelector('.profile-card h2').textContent==='Work' && !document.querySelector('.dialog-actions .primary').disabled`)
 	failRename.Store(false)
 	page.MustElement(".dialog-actions .primary").MustClick()
 	wait(`() => !document.querySelector('dialog').open && document.querySelector('.profile-card h2').textContent==='Office' && document.querySelector('.open-profile').getAttribute('aria-label')==='Open Office' && document.querySelector('.edit-profile').getAttribute('aria-label')==='Edit Office' && document.querySelector('.delete-profile').getAttribute('aria-label')==='Delete Office'`)
@@ -334,7 +405,7 @@ func TestProfilesUI(t *testing.T) {
 	wait(`() => !document.querySelector('dialog').open && document.querySelector('.profile-card h2').textContent==='Work'`)
 	// Long names must wrap without pushing actions outside the card.
 	create("A very long browser profile name that wraps across multiple lines without overflowing")
-	dir := os.Getenv("SESSIONSPLIT_UI_ARTIFACTS")
+	dir := os.Getenv("ISOLATE_UI_ARTIFACTS")
 	if dir == "" {
 		dir = t.TempDir()
 	}
@@ -352,8 +423,52 @@ func TestProfilesUI(t *testing.T) {
 	}
 	openSettings()
 	wait(`() => document.querySelector('#settings-dialog footer .primary').disabled && document.querySelector('#settings-engine option[value=brave]').disabled && document.querySelector('#settings-dialog').textContent.includes('Switching browsers does not transfer logins')`)
+	wait(`() => {const bounds=document.querySelector('#settings-dialog').getBoundingClientRect();return Math.abs(bounds.right-innerWidth)<1 && Math.abs(bounds.top)<1 && Math.abs(bounds.height-innerHeight)<1;}`)
+	if !page.MustEval(`async () => {
+		const drawer=document.querySelector('#settings-dialog');
+		const initialLeft=drawer.getBoundingClientRect().left;
+		drawer.querySelector('.close-drawer').click();
+		await new Promise(requestAnimationFrame);
+		if(matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+		const animations=drawer.getAnimations();
+		animations.forEach(animation => {animation.pause(); animation.currentTime=90;});
+		const left=drawer.getBoundingClientRect().left;
+		const slidesOut=drawer.open && left>initialLeft && left<innerWidth;
+		animations.forEach(animation => animation.finish());
+		return slidesOut;
+	}`).Bool() {
+		t.Fatal("settings drawer disappeared before sliding out")
+	}
+	wait(`() => !document.querySelector('#settings-dialog').open && document.activeElement.getAttribute('aria-label')==='Settings for Work'`)
+	openSettings()
+	page.Mouse.MustMoveTo(12, 150).MustClick(proto.InputMouseButtonLeft)
+	wait(`() => !document.querySelector('#settings-dialog').open && document.activeElement.getAttribute('aria-label')==='Settings for Work'`)
+	openSettings()
 	page.Keyboard.MustType(input.Escape)
 	wait(`() => !document.querySelector('#settings-dialog').open && document.activeElement.getAttribute('aria-label')==='Settings for Work'`)
+	openSettings()
+	page.MustElement("#settings-engine").MustSelect("Microsoft Edge")
+	page.MustElement("#settings-dialog footer .primary").MustClick()
+	wait(`() => !document.querySelector('#settings-dialog').open && [...document.querySelectorAll('.profile-card')].some(card => card.querySelector('h2').textContent==='Work' && card.querySelector('.browser-name').textContent==='Microsoft Edge')`)
+	wait(`() => [...document.querySelectorAll('.profile-card')].some(card => card.querySelector('h2').textContent==='Work' && card.querySelector('.profile-brand img')?.getAttribute('src')==='/icons/browser-edge.png' && card.querySelector('.profile-brand img').naturalWidth>0)`)
+	openSettings()
+	page.MustElement("#settings-engine").MustSelect("Other Chromium-based browser")
+	wait(`() => !!document.querySelector('#settings-browser-path')`)
+	fillSetting("#settings-browser-path", chrome)
+	page.MustElement("#settings-dialog footer .primary").MustClick()
+	wait(`() => !document.querySelector('#settings-dialog').open`)
+	openSettings()
+	wait(`() => document.querySelector('#settings-engine').value==='custom' && document.querySelector('#settings-browser-path').value!==''`)
+	wait(`() => [...document.querySelectorAll('.profile-card')].some(card => card.querySelector('h2').textContent==='Work' && card.querySelector('.profile-brand svg') && !card.querySelector('.profile-brand img'))`)
+	page.MustElement("#settings-engine").MustSelect("Firefox")
+	page.MustElement("#settings-dialog footer .primary").MustClick()
+	wait(`() => !document.querySelector('#settings-dialog').open && [...document.querySelectorAll('.profile-card')].some(card => card.querySelector('h2').textContent==='Work' && card.querySelector('.browser-name').textContent==='Firefox')`)
+	wait(`() => [...document.querySelectorAll('.profile-card')].some(card => card.querySelector('h2').textContent==='Work' && card.querySelector('.profile-brand img')?.getAttribute('src')==='/icons/browser-firefox.png' && card.querySelector('.profile-brand img').naturalWidth>0)`)
+	openSettings()
+	wait(`() => document.querySelector('#settings-engine').value==='firefox' && !document.querySelector('#settings-browser-path')`)
+	page.MustElement("#settings-engine").MustSelect("Chrome / Chromium")
+	page.MustElement("#settings-dialog footer .primary").MustClick()
+	wait(`() => !document.querySelector('#settings-dialog').open`)
 	openSettings()
 	page.MustElement("#settings-proxy-mode").MustSelect("HTTP proxy")
 	fillSetting("#settings-proxy-host", "localhost")
@@ -366,7 +481,24 @@ func TestProfilesUI(t *testing.T) {
 	fillSetting("#settings-width", "1280")
 	fillSetting("#settings-height", "800")
 	page.MustElement("#settings-permissions").MustSelect("Block")
-	wait(`() => [...document.querySelectorAll('#settings-dialog button')].find(b => b.textContent==='Test saved connection').disabled && document.querySelector('#settings-dialog').textContent.includes('Save changes before testing')`)
+	wait(`() => ![...document.querySelectorAll('#settings-dialog button')].find(b => b.textContent==='Test connection').disabled`)
+	beforeTest, err := os.ReadFile(filepath.Join(service.root, "profiles.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	page.MustElementR("#settings-dialog button", "^Test connection$").MustClick()
+	wait(`() => document.querySelector('#settings-dialog .diagnostic-result')?.textContent.includes('203.0.113.25') && !document.querySelector('#settings-dialog footer .primary').disabled && document.querySelector('#settings-proxy-password').value==='ui-test-password-not-a-secret'`)
+	draft := testedConnection.Load().(SettingsUpdate)
+	if draft.Settings.Proxy.Host != "localhost" || draft.Settings.Proxy.Port != 8123 || draft.Settings.Proxy.Username != "test-user" || draft.Password != testPassword || draft.PasswordAction != "replace" {
+		t.Fatal("connection test did not receive the unsaved proxy inputs")
+	}
+	afterTest, err := os.ReadFile(filepath.Join(service.root, "profiles.json"))
+	if err != nil || string(afterTest) != string(beforeTest) || connectionTests.Load() != 1 {
+		t.Fatal("unsaved connection test changed saved profiles", err)
+	}
+	fillSetting("#settings-proxy-host", "127.0.0.1")
+	wait(`() => !document.querySelector('#settings-dialog .diagnostic-result')`)
+	fillSetting("#settings-proxy-host", "localhost")
 	failSettings.Store(true)
 	page.MustElement("#settings-dialog footer .primary").MustClick()
 	wait(`() => document.querySelector('#settings-dialog [role=alert]')?.textContent.includes('Could not save settings. Check available disk space and folder permissions, then try again.') && !document.body.textContent.includes('/private/storage') && document.querySelector('#settings-proxy-password').value==='ui-test-password-not-a-secret' && !document.querySelector('#settings-dialog footer .primary').disabled`)
@@ -399,13 +531,13 @@ func TestProfilesUI(t *testing.T) {
 	wait(`() => !document.querySelector('.add-profile').disabled`)
 	openSettings()
 	wait(`() => document.querySelector('#settings-proxy-mode').value==='http' && document.querySelector('#settings-proxy-host').value==='localhost' && document.querySelector('#settings-proxy-port').value==='8123' && document.querySelector('#settings-language').value==='en-US' && document.querySelector('#settings-timezone').value==='Africa/Nairobi' && document.querySelector('#settings-width').value==='1280' && document.querySelector('#settings-height').value==='800' && document.querySelector('#settings-permissions').value==='block' && document.querySelector('#settings-proxy-password').value==='' && !document.body.textContent.includes('ui-test-password-not-a-secret') && document.querySelector('#settings-password-hint').textContent.includes('Leave this blank to keep it')`)
-	if connectionTests.Load() != 0 {
+	if connectionTests.Load() != 1 {
 		t.Fatal("opening or saving settings triggered an automatic network test")
 	}
-	page.MustElementR("#settings-dialog button", "^Test saved connection$").MustClick()
+	page.MustElementR("#settings-dialog button", "^Test connection$").MustClick()
 	wait(`() => document.querySelector('#settings-dialog .diagnostic-result')?.textContent.includes('203.0.113.25') && document.querySelector('#settings-dialog .diagnostic-result').textContent.includes('HTTP proxy') && document.querySelector('#settings-dialog .diagnostic-result').textContent.includes('42 ms') && document.querySelector('#settings-dialog .diagnostic-result').textContent.includes('unverified')`)
-	if connectionTests.Load() != 1 {
-		t.Fatal("manual connection test did not issue exactly one saved-route request")
+	if connectionTests.Load() != 2 {
+		t.Fatal("manual connection test did not issue exactly one additional request")
 	}
 	page.MustElement("#settings-dialog footer .secondary").MustClick()
 	wait(`() => !document.querySelector('#settings-dialog').open && document.activeElement.getAttribute('aria-label')==='Settings for Work'`)
@@ -424,7 +556,7 @@ func TestProfilesUI(t *testing.T) {
 		for _, viewport := range [][2]int{{1200, 800}, {480, 800}, {480, 320}} {
 			page.MustSetViewport(viewport[0], viewport[1], 1, false)
 			openSettings()
-			wait(`() => { const dialog=document.querySelector('#settings-dialog'); const save=dialog.querySelector('footer .primary').getBoundingClientRect(); return dialog.scrollWidth<=dialog.clientWidth && save.bottom<=innerHeight && save.top>=0; }`)
+			wait(`() => { const dialog=document.querySelector('#settings-dialog'); const save=dialog.querySelector('footer .primary').getBoundingClientRect(); const bounds=dialog.getBoundingClientRect(); return dialog.scrollWidth<=dialog.clientWidth && save.bottom<=innerHeight && save.top>=0 && Math.abs(bounds.right-innerWidth)<1 && Math.abs(bounds.height-innerHeight)<1; }`)
 			if viewport[1] == 320 {
 				page.MustEval(`() => {const content=document.querySelector('#settings-dialog .settings-content'); content.scrollTop=content.scrollHeight;}`)
 				wait(`() => document.querySelector('#settings-dialog .settings-content').scrollTop>0`)

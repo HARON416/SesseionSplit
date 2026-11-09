@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/zalando/go-keyring"
 )
@@ -22,7 +23,11 @@ func newOSCredentialStore(root string) credentialStore {
 	if err != nil {
 		absolute = filepath.Clean(root)
 	}
-	return osCredentialStore{service: fmt.Sprintf("SessionSplit-%x", sha256.Sum256([]byte(absolute)))}
+	name := "Isolate"
+	if strings.EqualFold(filepath.Base(absolute), "sessionsplit") {
+		name = "SessionSplit"
+	}
+	return osCredentialStore{service: fmt.Sprintf("%s-%x", name, sha256.Sum256([]byte(absolute)))}
 }
 func (s osCredentialStore) Get(key string) (string, error) { return keyring.Get(s.service, key) }
 func (s osCredentialStore) Set(key, value string) error    { return keyring.Set(s.service, key, value) }

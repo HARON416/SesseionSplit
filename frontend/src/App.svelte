@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { CreateProfile, DeleteProfile, ListProfiles, OpenProfile, RenameProfile } from '../bindings/sessionsplit/profileservice';
-  import type { BrowserProfile } from '../bindings/sessionsplit/models';
+  import { CreateProfileWithBrowser, DeleteProfile, ListBrowserEngines, ListProfiles, OpenProfile, UpdateProfile } from '../bindings/isolate/profileservice';
+  import type { BrowserProfile, EngineInfo } from '../bindings/isolate/models';
   import WindowControls from './WindowControls.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
   import ProfileSettings from './ProfileSettings.svelte';
+  import BrowserLogo from './BrowserLogo.svelte';
+  import EmptyWorkspace from './EmptyWorkspace.svelte';
   import { formatCreatedDate, formatExactTimestamp, formatLastOpened, formatTime } from './timestamps';
   let now = $state(Date.now());
   let controls: WindowControls;
@@ -12,7 +14,14 @@
   let message = $state('');
   let profileDialog: HTMLDialogElement;
   let profileName = $state('');
+  let profileEngine = $state('chrome');
+  let profileBrowserPath = $state('');
+  let profileEngines = $state<EngineInfo[]>([]);
+  let browserOptionsLoading = $state(false);
+  let browserOptionsGeneration = 0;
   let profileToEdit = $state<BrowserProfile | null>(null);
+  const browserSelectionChanged = $derived(Boolean(profileToEdit && (profileEngine !== (profileToEdit.settings?.engine || 'chrome') || (profileEngine === 'custom' && profileBrowserPath.trim() !== (profileToEdit.settings?.browserPath || '')))));
+  const profileUnchanged = $derived(Boolean(profileToEdit && profileName.trim() === profileToEdit.name && !browserSelectionChanged));
   let profileDialogReturnID: string | null = null;
   let profiles = $state<BrowserProfile[]>([]);
   let loading = $state(true);
@@ -31,15 +40,20 @@
     const detail = error instanceof Error ? error.message : String(error);
     if (detail.includes('A profile with this name already exists')) return 'A profile with this name already exists. Choose a different name.';
     if (detail.includes('Enter a profile name')) return 'Enter a profile name.';
-    if (detail.includes('SessionSplit is closing')) return 'SessionSplit is closing. Reopen the app to try again.';
-    if (detail.includes('Profile was not found')) return 'This profile is no longer available. Restart SessionSplit to refresh the list.';
+    if (detail.includes('Isolate is closing')) return 'Isolate is closing. Reopen the app to try again.';
+    if (detail.includes('Profile was not found')) return 'This profile is no longer available. Restart Isolate to refresh the list.';
+    if (detail.includes('Close this profile browser before changing browsers')) return 'Close this profile’s browser before changing it. You can close it from Settings, then try again.';
+    if (detail.includes('Choose a supported browser')) return 'Choose a supported browser.';
     if (detail.includes('Install Chrome or Chromium')) return 'Install Chrome or Chromium, then try opening the profile again.';
     if (detail.includes('Install Brave')) return 'Install Brave to open this profile, or choose Chrome in its settings.';
+    if (detail.includes('Isolate will not substitute another browser')) return 'The selected browser is not installed. Install it, or select another browser in this profile’s settings.';
+    if (detail.includes('browser executable')) return 'Enter the full path to an existing Chromium-based browser executable, without command-line arguments.';
+    if (detail.includes('Firefox does not support the selected language or timezone settings')) return 'Update Firefox to use the selected language and timezone settings, or leave these fields blank in this profile’s settings.';
     if (detail.includes('keyring') || detail.includes('proxy password')) return 'Could not access the saved proxy password. Unlock your system keyring or update the password in profile settings.';
     if (detail.includes('Browser opened, but the last-open time could not be saved')) return 'The browser opened, but its activity time could not be saved. Check available disk space and folder permissions.';
     if (action === 'open') return 'Could not open the browser. Close any unresponsive browser windows and try again.';
     if (action === 'delete') return 'Could not finish deleting the profile. Check available disk space and folder permissions, then try again.';
-    if (action === 'rename') return 'Could not save the profile name. Check available disk space and folder permissions, then try again.';
+    if (action === 'rename') return 'Could not save the profile. Check available disk space and folder permissions, then try again.';
     return 'Could not create the profile. Check available disk space and folder permissions, then try again.';
   }
 
@@ -49,7 +63,7 @@
     window.addEventListener('focus', refreshTime);
     document.addEventListener('visibilitychange', refreshTime);
     void ListProfiles().then((saved) => profiles = saved ?? [])
-      .catch(() => { loadFailed = true; message = 'Could not load profiles. Restart SessionSplit to try again.'; })
+      .catch(() => { loadFailed = true; message = 'Could not load profiles. Restart Isolate to try again.'; })
       .finally(() => loading = false);
     const handleShortcut = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'n') {
@@ -67,24 +81,49 @@
   });
 
   function openProfileDialog() {
-    profileDialogReturnID = null;
+    profileDialogReturnID = document.activeElement?.id === 'empty-create-profile' ? 'empty-create-profile' : null;
     profileToEdit = null;
     profileName = '';
+    profileEngine = 'chrome';
+    profileBrowserPath = '';
     profileError = '';
     profileDialog.showModal();
+    void loadProfileBrowsers();
+  }
+
+  async function loadProfileBrowsers() {
+    const generation = ++browserOptionsGeneration;
+    browserOptionsLoading = true;
+    profileEngines = [];
+    try {
+      const engines = await ListBrowserEngines();
+      if (generation !== browserOptionsGeneration) return;
+      profileEngines = engines ?? [];
+      if (!profileToEdit && !profileEngines.find(item => item.id === profileEngine)?.available) {
+        profileEngine = profileEngines.find(item => item.available && item.id !== 'custom')?.id || 'chrome';
+      }
+    } catch {
+      if (generation === browserOptionsGeneration) profileError = 'Could not load browsers. Close this dialog and try again.';
+    } finally {
+      if (generation === browserOptionsGeneration) browserOptionsLoading = false;
+    }
   }
 
   async function editProfile(profile: BrowserProfile) {
     profileDialogReturnID = `edit-${profile.id}`;
     profileToEdit = profile;
     profileName = profile.name;
+    profileEngine = profile.settings?.engine || 'chrome';
+    profileBrowserPath = profile.settings?.browserPath || '';
     profileError = '';
     await tick();
     profileDialog.showModal();
+    void loadProfileBrowsers();
     document.querySelector<HTMLInputElement>('#profile-name')?.select();
   }
 
   function closeProfileDialog() {
+    browserOptionsGeneration++;
     profileToEdit = null;
     if (profileDialogReturnID) document.getElementById(profileDialogReturnID)?.focus();
     else document.querySelector<HTMLButtonElement>('.add-profile')?.focus();
@@ -93,17 +132,18 @@
   async function createProfile(event: SubmitEvent) {
     event.preventDefault();
     const name = profileName.trim();
-    if (!name || creating) return;
+    if (!name || creating || browserOptionsLoading || !profileEngines.length) return;
     creating = true;
     profileError = '';
     const edited = profileToEdit;
     try {
-      const profile = edited ? await RenameProfile(edited.id, name) : await CreateProfile(name);
+      const browserPath = profileEngine === 'custom' ? profileBrowserPath.trim() : '';
+      const profile = edited ? await UpdateProfile(edited.id, name, profileEngine, browserPath) : await CreateProfileWithBrowser(name, profileEngine, browserPath);
       now = Date.now();
       profiles = edited ? profiles.map((item) => item.id === profile.id ? profile : item) : [profile, ...profiles];
       profileDialogReturnID = `${edited ? 'edit' : 'open'}-${profile.id}`;
       profileDialog.close();
-      announcement = edited ? `Renamed ${edited.name} to ${profile.name}` : `Created ${profile.name}`;
+      announcement = edited ? `Updated ${profile.name}` : `Created ${profile.name}`;
       await tick();
       if (!edited) document.querySelector('main')?.scrollTo({ top: 0 });
       document.getElementById(`${edited ? 'edit' : 'open'}-${profile.id}`)?.focus();
@@ -171,7 +211,7 @@
     <ThemeToggle />
     <WindowControls bind:this={controls} onerror={(error) => message = error} />
   </header>
-  <main aria-label="Profile workspace" aria-busy={loading}>
+  <main class:workspace-empty={!loading && !profiles.length && !loadFailed} aria-label="Profile workspace" aria-busy={loading}>
     {#if loading}
       <p class="loading" role="status">Loading profiles…</p>
     {:else if profiles.length}
@@ -181,18 +221,14 @@
           {@const lastOpened = formatLastOpened(profile.lastOpenedAt, now)}
           <article class="profile-card" aria-labelledby={`profile-${profile.id}`}>
             <div class="profile-card-header">
-            <div class="profile-brand" aria-hidden="true">
-              {#if profile.settings?.engine === 'brave'}
-              <svg viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" aria-hidden="true"><rect x="32" y="40" width="192" height="176" /><path d="M32 88h192M64 64h1M88 64h1" /></svg>
-              {:else}
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,16a88,88,0,0,1,73.72,40H128a48.08,48.08,0,0,0-45.6,33l-23.08-40A87.89,87.89,0,0,1,128,40Zm32,88a32,32,0,1,1-32-32A32,32,0,0,1,160,128ZM40,128a87.44,87.44,0,0,1,9.56-39.86L86.43,152c.06.1.13.19.19.28A48,48,0,0,0,137.82,175l-23.1,40A88.14,88.14,0,0,1,40,128Zm92.69,87.87L169.57,152c.08-.14.14-.28.22-.42a47.88,47.88,0,0,0-6-55.58H210a88,88,0,0,1-77.29,119.87Z" /></svg>
-              {/if}
-            </div>
+              <div class="profile-brand" aria-hidden="true">
+                <BrowserLogo engine={profile.settings?.engine} browser={profile.browser} />
+              </div>
             </div>
             <div class="profile-details">
               <h2 id={`profile-${profile.id}`}>{profile.name}</h2>
               <div class="profile-badges">
-                <span class="browser-name">{profile.settings?.engine === 'brave' ? 'Brave' : (profile.browser === 'Chrome' ? 'Google Chrome' : profile.browser)}</span>
+                <span class="browser-name">{profile.browser === 'Chrome' ? 'Google Chrome' : profile.browser}</span>
                 <span class="connection-name">{!profile.settings?.proxy?.mode || profile.settings.proxy.mode === 'direct' ? 'Direct connection' : `${profile.settings.proxy.mode.toUpperCase()} proxy`}</span>
               </div>
             </div>
@@ -234,10 +270,7 @@
         {/each}
       </div>
     {:else if !loadFailed}
-      <div class="empty-state">
-        <h1>Create your first profile</h1>
-        <p>Use Add new profile to keep browser sessions, cookies, saved data, and downloads separate.</p>
-      </div>
+      <EmptyWorkspace oncreate={openProfileDialog} onerror={(error) => message = error} />
     {/if}
   </main>
   <span class="sr-only" role="status">{announcement}</span>
@@ -254,14 +287,26 @@
 
 <dialog bind:this={profileDialog} aria-labelledby="profile-dialog-title" onclose={closeProfileDialog} oncancel={(event) => { if (creating) event.preventDefault(); }}>
   <form onsubmit={createProfile} aria-busy={creating}>
-    <h1 id="profile-dialog-title">{profileToEdit ? 'Edit profile name' : 'Add new profile'}</h1>
-    <p id="profile-name-hint" class="dialog-hint">{profileToEdit ? 'Change the name only. Your browser sessions, saved data, and downloads stay with this profile.' : 'Each profile keeps its browser sessions, cookies, saved data, and downloads separate. Add a name you can recognize at a glance.'}</p>
+    <h1 id="profile-dialog-title">{profileToEdit ? 'Edit profile' : 'Add new profile'}</h1>
+    <p id="profile-name-hint" class="dialog-hint">{profileToEdit ? 'Update the name or browser. Your saved browser data stays with this profile.' : 'Each profile keeps its browser sessions, cookies, saved data, and downloads separate. Choose a name and browser to get started.'}</p>
     <label for="profile-name">Profile name</label>
     <input id="profile-name" name="profileName" type="text" bind:value={profileName} placeholder="e.g. Personal" autocomplete="off" disabled={creating} aria-invalid={Boolean(profileError)} aria-describedby={profileError ? 'profile-name-hint profile-error' : 'profile-name-hint'} required />
+    <label class="browser-label" for="profile-engine">Browser</label>
+    <select id="profile-engine" bind:value={profileEngine} disabled={creating || browserOptionsLoading} aria-describedby="profile-browser-hint" required>
+      {#if browserOptionsLoading}<option value={profileEngine}>Loading browsers…</option>{/if}
+      {#each profileEngines as available (available.id)}
+        <option value={available.id} disabled={!available.available}>{available.name}{available.available ? '' : ' — not installed'}</option>
+      {/each}
+    </select>
+    {#if profileEngine === 'custom'}
+      <label class="browser-label" for="profile-browser-path">Browser executable</label>
+      <input id="profile-browser-path" type="text" bind:value={profileBrowserPath} placeholder="Full path to the browser executable" autocomplete="off" disabled={creating} required />
+    {/if}
+    <p id="profile-browser-hint" class="browser-hint">{profileEngine === 'custom' ? 'Use a Chromium-based executable, without command-line arguments. Choose the Firefox entry for Firefox. ' : ''}Each browser keeps its own sessions; switching browsers does not transfer logins.{profileToEdit ? ' Close the running browser before changing it.' : ''}</p>
     {#if profileError}<p id="profile-error" class="profile-error" role="alert">{profileError}</p>{/if}
     <div class="dialog-actions">
       <button class="secondary" type="button" disabled={creating} onclick={() => profileDialog.close()}>Cancel</button>
-      <button class="primary" type="submit" disabled={!profileName.trim() || creating || Boolean(profileToEdit && profileName.trim() === profileToEdit.name)}>{creating ? (profileToEdit ? 'Saving…' : 'Creating…') : (profileToEdit ? 'Save changes' : 'Create')}</button>
+      <button class="primary" type="submit" disabled={!profileName.trim() || creating || browserOptionsLoading || !profileEngines.length || profileUnchanged || (profileEngine === 'custom' && !profileBrowserPath.trim())}>{creating ? (profileToEdit ? 'Saving…' : 'Creating…') : (profileToEdit ? 'Save changes' : 'Create')}</button>
     </div>
   </form>
 </dialog>
@@ -290,6 +335,7 @@
   .add-profile svg { width: 16px; height: 16px; }
   .window-caption { --wails-draggable: drag; flex: 1; min-width: 32px; }
   main { flex: 1; min-height: 0; overflow: auto; padding: 24px; }
+  main.workspace-empty { display: grid; place-items: center; }
   .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr)); gap: 16px; align-items: start; }
   .profile-card { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-content: space-between; align-items: start; gap: 20px 16px; min-width: 0; min-height: 180px; padding: 20px; border-radius: 0; background: var(--surface); box-shadow: var(--card-shadow); }
   .profile-card-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; margin: 0; }
@@ -297,7 +343,6 @@
   .edit-profile:hover:enabled, .settings-profile:hover:enabled { border-color: var(--text-secondary); background: var(--surface-hover); color: var(--text); }
   .delete-profile:hover:enabled { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
   .profile-brand { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 0; background: var(--surface); color: var(--text); }
-  .profile-brand svg { display: block; width: 32px; height: 32px; }
   .profile-details { min-width: 0; width: 100%; margin: 0; }
   h2 { max-width: 100%; margin: 0 0 8px; overflow-wrap: anywhere; font-size: 18px; line-height: 1.4; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
   .browser-name { display: inline-block; max-width: 100%; padding: 4px 8px; overflow-wrap: anywhere; border-radius: 0; background: var(--surface-hover); color: var(--text); font-size: 11px; line-height: 1.5; font-weight: 550; }
@@ -312,9 +357,6 @@
   time { display: flex; flex-direction: column; overflow-wrap: anywhere; color: var(--text); font-size: 13px; font-weight: 550; }
   .open-profile { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 64px; min-height: 34px; padding: 8px 16px; border: 0; border-radius: 0; background: var(--text); color: var(--surface); font-size: 12px; line-height: 1.5; font-weight: 550; cursor: pointer; }
   .open-profile:hover:enabled { background: var(--text-secondary); }
-  .empty-state { max-width: 420px; margin: 32px auto; }
-  .empty-state h1 { margin-bottom: 12px; }
-  .empty-state p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6; text-wrap: pretty; }
   .dialog-hint { margin: -12px 0 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.6; text-wrap: pretty; }
   .loading { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
   button:disabled { cursor: default; opacity: .5; }
@@ -328,11 +370,13 @@
   dialog::backdrop { background: var(--backdrop); }
   h1 { margin: 0 0 24px; font-size: 18px; line-height: 1.4; font-weight: 600; }
   label { display: block; margin-bottom: 8px; font-size: 13px; line-height: 1.5; font-weight: 550; }
-  input { width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid var(--input-border); border-radius: 0; background: var(--surface); color: var(--text); caret-color: var(--accent); font: inherit; font-size: 13px; line-height: 1.5; }
+  input, select { width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid var(--input-border); border-radius: 0; background: var(--surface); color: var(--text); caret-color: var(--accent); font: inherit; font-size: 13px; line-height: 1.5; }
+  .browser-label { margin-top: 16px; }
+  .browser-hint { margin: 8px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
   input::placeholder { color: var(--text-secondary); }
   #profile-name { text-transform: uppercase; font-weight: 550; }
   #profile-name::placeholder { text-transform: none; font-weight: 400; }
-  input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
   .dialog-actions button { min-height: 36px; padding: 8px 16px; border: 1px solid var(--border); border-radius: 0; font-size: 13px; line-height: 1.4; font-weight: 550; cursor: pointer; }
   .secondary { background: var(--surface); color: var(--text); }

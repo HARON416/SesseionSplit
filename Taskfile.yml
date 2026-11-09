@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  APP_NAME: "sessionsplit"
+  APP_NAME: "isolate"
   BIN_DIR: "bin"
   PACKAGE_MANAGER: '{{.PACKAGE_MANAGER | default "npm"}}'
   VITE_PORT: '{{.WAILS_VITE_PORT | default 9246}}'
@@ -13,19 +13,22 @@ vars:
 includes:
   common: ./build/Taskfile.yml
   windows: ./build/windows/Taskfile.yml
-  darwin: ./build/darwin/Taskfile.yml
   linux: ./build/linux/Taskfile.yml
-  ios: ./build/ios/Taskfile.yml
-  android: ./build/android/Taskfile.yml
 
 tasks:
   build:
     summary: Builds the application
+    preconditions:
+      - sh: '[ "{{.GOOS}}" = "windows" ] || [ "{{.GOOS}}" = "linux" ]'
+        msg: "Supported targets are Windows and Ubuntu Linux only."
     cmds:
       - task: "{{.GOOS}}:build"
 
   package:
-    summary: Packages a production build of the application
+    summary: Creates a Windows NSIS installer or Ubuntu DEB package
+    preconditions:
+      - sh: '[ "{{.GOOS}}" = "windows" ] || [ "{{.GOOS}}" = "linux" ]'
+        msg: "Supported packages are Windows NSIS installers and Ubuntu DEBs only."
     cmds:
       - task: "{{.GOOS}}:package"
 
@@ -38,11 +41,6 @@ tasks:
     summary: Runs the application in development mode
     cmds:
       - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
-
-  install:msix:tools:
-    summary: Installs tools required for Windows MSIX packaging
-    cmds:
-      - task: windows:install:msix:tools
 
   setup:docker:
     summary: Builds Docker image for cross-compilation (~800MB download)

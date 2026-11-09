@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -50,81 +49,60 @@ type chromiumEngine struct {
 func (e chromiumEngine) Info() EngineInfo { return e.info }
 
 func browserLabelForEngine(id string) string {
-	if id == "brave" {
-		return "Brave"
+	if id == "" || id == "chrome" {
+		if strings.Contains(strings.ToLower(filepath.Base(findEnginePath("chrome"))), "chromium") {
+			return "Chromium"
+		}
+		return "Chrome"
 	}
-	if strings.Contains(strings.ToLower(filepath.Base(findEnginePath("chrome"))), "chromium") {
-		return "Chromium"
-	}
-	return "Chrome"
+	browser, _ := browserDefinition(id)
+	return browser.name
 }
 
 func engineDetails(id string) EngineInfo {
-	if id == "brave" {
-		return EngineInfo{ID: id, Name: "Brave", FingerprintProtection: "Native Brave fingerprinting protections", Notes: "Uses the installed Brave browser and its native Shields defaults. SessionSplit does not verify per-site Shields state or guarantee anonymity. Timezone and locale overrides cover page and iframe targets, not worker execution contexts. Browser updates are managed by Brave or your operating system. https://github.com/brave/brave-browser/wiki/Fingerprinting-Protections"}
+	browser, _ := browserDefinition(id)
+	info := EngineInfo{ID: browser.id, Name: browser.name, FingerprintProtection: "Standard browser protections; no added fingerprint protection",
+		Notes: "Uses the selected installed browser. Profile isolation separates storage, not browser identity. Timezone and locale overrides cover page and iframe targets, not worker execution contexts. Browser updates are managed by the browser vendor or your operating system."}
+	if browser.id == "brave" {
+		info.FingerprintProtection = "Native Brave fingerprinting protections"
+		info.Notes += " Uses native Shields defaults; Isolate does not verify per-site Shields state or guarantee anonymity. https://github.com/brave/brave-browser/wiki/Fingerprinting-Protections"
 	}
-	return EngineInfo{ID: "chrome", Name: "Chrome / Chromium", FingerprintProtection: "Standard browser protections; no added fingerprint protection", Notes: "Uses installed Chrome or Chromium. Profile isolation separates storage, not browser identity. Timezone and locale overrides cover page and iframe targets, not worker execution contexts. Browser updates are managed by the browser vendor or your operating system."}
+	if browser.id == "custom" {
+		info.Notes += " Choose an executable that supports Chromium remote debugging and separate user-data directories. Compatibility varies by browser."
+	}
+	if browser.id == "firefox" {
+		info.Notes = "Uses installed Firefox with separate saved sessions and native browser protections. Language and timezone settings require a Firefox version with the corresponding WebDriver BiDi commands; unsupported settings stop launch. Proxied profiles disable WebRTC. Browser updates are managed by Mozilla or your operating system."
+	}
+	return info
 }
 
 func resolveProfileEngine(settings ProfileSettings, overridePath string) (browserEngine, error) {
-	id := settings.Engine
-	if id == "" {
-		id = "chrome"
-	}
-	if id != "chrome" && id != "brave" {
-		return nil, errors.New("Choose Chrome or Brave as the browser")
+	browser, found := browserDefinition(settings.Engine)
+	if !found {
+		return nil, errors.New("Choose a supported browser")
 	}
 	path := overridePath
-	if path == "" {
-		path = findEnginePath(id)
-	}
-	if path == "" {
-		if id == "brave" {
-			return nil, errors.New("Install Brave to open this profile; SessionSplit will not substitute another browser")
+	if path == "" && browser.id == "custom" {
+		if err := validateBrowserSelection(settings); err != nil {
+			return nil, err
 		}
-		return nil, errors.New("Install Chrome or Chromium to open a profile")
+		path = settings.BrowserPath
 	}
-	info := engineDetails(id)
+	if path == "" {
+		path = findEnginePath(browser.id)
+	}
+	if path == "" {
+		if browser.id == "chrome" {
+			return nil, errors.New("Install Chrome or Chromium to open a profile")
+		}
+		return nil, fmt.Errorf("Install %s to open this profile; Isolate will not substitute another browser", browser.name)
+	}
+	info := engineDetails(browser.id)
 	info.Available = true
+	if browser.id == "firefox" {
+		return firefoxEngine{path: path, info: info}, nil
+	}
 	return chromiumEngine{path: path, info: info}, nil
-}
-
-func findEnginePath(id string) string {
-	if id == "chrome" {
-		for _, path := range chromeCandidates(runtime.GOOS, os.Getenv) {
-			if resolved, err := exec.LookPath(path); err == nil {
-				return resolved
-			}
-		}
-		return ""
-	}
-	for _, name := range []string{"brave-browser", "brave-browser-stable", "brave"} {
-		if path, err := exec.LookPath(name); err == nil {
-			return path
-		}
-	}
-	candidates := []string{}
-	switch runtime.GOOS {
-	case "darwin":
-		candidates = append(candidates, "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
-		if home, err := os.UserHomeDir(); err == nil {
-			candidates = append(candidates, filepath.Join(home, "Applications/Brave Browser.app/Contents/MacOS/Brave Browser"))
-		}
-	case "windows":
-		for _, key := range []string{"PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"} {
-			if root := os.Getenv(key); root != "" {
-				candidates = append(candidates, filepath.Join(root, "BraveSoftware", "Brave-Browser", "Application", "brave.exe"))
-			}
-		}
-	default:
-		candidates = append(candidates, "/opt/brave.com/brave/brave-browser", "/snap/bin/brave")
-	}
-	for _, path := range candidates {
-		if stat, err := os.Stat(path); err == nil && !stat.IsDir() && (runtime.GOOS == "windows" || stat.Mode()&0111 != 0) {
-			return path
-		}
-	}
-	return ""
 }
 
 func chromeCandidates(platform string, getenv func(string) string) []string {
@@ -151,9 +129,11 @@ func chromeCandidates(platform string, getenv func(string) string) []string {
 
 func (s *ProfileService) ListBrowserEngines() []EngineInfo {
 	result := []EngineInfo{}
-	for _, id := range []string{"chrome", "brave"} {
-		info := engineDetails(id)
-		if path := findEnginePath(id); path != "" {
+	for _, browser := range browserCatalog {
+		info := engineDetails(browser.id)
+		if browser.id == "custom" {
+			info.Available = true
+		} else if path := findEnginePath(browser.id); path != "" {
 			info.Available = true
 			info.Version = installedBrowserVersion(path)
 		}
@@ -172,7 +152,7 @@ func (e chromiumEngine) Launch(ctx context.Context, cfg launchConfig) (*profileB
 	if err := validateProfileSettings(cfg.Settings); err != nil {
 		return nil, err
 	}
-	dir, cacheDir, downloadDir := engineProfilePaths(cfg.Root, cfg.Profile.ID, e.info.ID)
+	dir, cacheDir, downloadDir := engineProfilePaths(cfg.Root, cfg.Profile.ID, engineStorageID(e.info.ID, e.path))
 	for _, path := range []string{dir, cacheDir, downloadDir} {
 		if err := os.MkdirAll(path, 0700); err != nil {
 			return nil, fmt.Errorf("create profile directory: %w", err)
@@ -353,11 +333,19 @@ func newEngineLauncher(browserCtx context.Context, path string, cfg launchConfig
 	return l
 }
 
+func engineStorageID(id, path string) string {
+	if id != "custom" {
+		return id
+	}
+	path = filepath.Clean(path)
+	return fmt.Sprintf("custom-%x", sha256.Sum256([]byte(path)))
+}
+
 func engineProfilePaths(root, id, engineID string) (data, cache, downloads string) {
 	profileRoot := filepath.Join(root, "profiles", id)
 	engineRoot := profileRoot
-	if engineID == "brave" {
-		engineRoot = filepath.Join(profileRoot, "brave")
+	if engineID != "" && engineID != "chrome" {
+		engineRoot = filepath.Join(profileRoot, engineID)
 	}
 	return filepath.Join(engineRoot, "browser"), filepath.Join(engineRoot, "cache"), filepath.Join(profileRoot, "downloads")
 }
