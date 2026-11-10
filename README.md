@@ -10,6 +10,16 @@ different accounts without repeatedly signing out or mixing their sessions.
 It uses browsers already installed on your computer rather than downloading or
 compiling a custom browser.
 
+The repository was originally named **SessionSplit**; the application and current
+build artifacts are named **Isolate**.
+
+- [Getting started](#getting-started)
+- [Privacy and limitations](#privacy-and-limitations)
+- [Development](#development)
+- [Checks and builds](#checks-and-builds)
+- [Project structure](#project-structure)
+- [Testing and design notes](#testing-and-design-notes)
+
 ## Why Isolate?
 
 Switching between work, personal, and client accounts in a shared browser can
@@ -32,6 +42,9 @@ website's login and session policies.
 
 ## What it does
 
+- Set up independent Android virtual phones, stream their screens inside the
+  desktop app, and control them with mouse, keyboard, and clipboard text.
+- Switch between an Android screen wall and the browser-profile dashboard.
 - Create, edit, open, and delete profiles from a single dashboard, choosing a
   browser when creating a profile or changing it later in Edit or Settings.
 - Keep cookies, logins, browsing history, cache, and site storage separate between
@@ -53,16 +66,19 @@ Opera GX, Ungoogled Chromium, Thorium, and Firefox. **Other Chromium-based brows
 lets you select a compatible executable or portable installation manually.
 The chosen browser must be installed separately; Safari is not supported.
 
-Distribution targets are **Windows** through an NSIS installer and **Ubuntu**
-through a DEB package. Firefox uses its own native integration; supported
+Distribution targets are **Windows amd64** through an NSIS installer and
+**Ubuntu amd64** through a DEB package. The Ubuntu CI build targets Ubuntu
+24.04+. Automatic Android setup and bundled runtime tools support these two
+64-bit Intel/AMD platforms. Firefox uses its own native integration; supported
 environment settings depend on the installed browser version.
 
 ## Getting started
 
 ### Android Instagram screens
 
-Android screens is the default workspace; **Profiles** in the header opens the
-existing browser-profile manager. These are separate systems: browser cookies,
+Android screens is the initial workspace; Isolate remembers your workspace
+selection. **Profiles** in the header opens the browser-profile manager.
+These are separate systems: browser cookies,
 proxy settings, and saved logins are not imported into Android. Existing browser
 profiles remain available and unchanged.
 
@@ -80,10 +96,10 @@ One-time setup on a client's PC (Windows or Linux, Intel/AMD 64-bit):
    needs KVM and access to `/dev/kvm`. Setup reports errors and can be cancelled
    or retried; completed runtime downloads are reused.
 5. Select **Start emulator**, wait for Android to boot, then **Connect screen**.
-   Select **Play Store**, install Instagram, and sign in manually.
-6. Select **Instagram** and **Enlarge screen** to interact with the actual app.
-   Select **Enable audio** on the screen you want to hear. The other screens
-   remain muted. Tap, drag to swipe, type, paste, and use Back/Home.
+   Open Play Store inside the phone, install Instagram, and sign in manually.
+6. Open Instagram inside Android. Use **Screen size** to adjust the cards, and
+   click the phone you want to control and hear. Other phones remain muted.
+   Tap, drag to swipe, scroll, type, paste, and use Android's navigation gestures.
 
 **Add virtual phone** creates another independent Android installation using the
 same downloaded system image, up to ten configured devices. It never overwrites
@@ -147,7 +163,7 @@ blank lines, and joins the remaining lines with a space. Text
 injection supports printable ASCII except `%`; use Android's on-screen keyboard
 for other characters. Secure/protected Android surfaces may not be capturable.
 
-**Stop emulator** releases resources without wiping apps or saved data. Switching
+The current screen wall has no per-phone stop button. Switching
 workspaces disconnects streaming but leaves emulators running. Closing Isolate
 cancels setup, disconnects streams, and stops emulators it started; emulators
 started elsewhere are left running. Instagram availability, login, Reels,
@@ -179,7 +195,7 @@ References: [Android virtual devices](https://developer.android.com/studio/run/m
 ### Browser profiles
 
 1. Install Isolate and a supported browser.
-2. Select **Add new profile**, enter a recognizable name, choose a browser, and create the profile.
+2. Select **Profiles** in the header, then **Add new profile**. Enter a recognizable name, choose a browser, and create the profile.
 3. Use **Edit** to change its name or browser, or open **Settings** to configure and test a proxy.
 4. Save the settings, open the profile, and sign in to the websites you need.
 5. Reopen the same profile later to use its saved browser data.
@@ -221,10 +237,23 @@ and protection limits. Implementation progress is tracked in [TODO.md](TODO.md).
 ## Development
 
 Install Go 1.26.2+, Node.js 22.12+ (or 20.19+), Make, and the platform prerequisites for Wails v3.
+The Wails Go module, CLI, and frontend runtime are pinned to `v3.0.0-beta.34`.
+
+On Ubuntu, install the native build libraries and Android playback codecs:
+
+```sh
+sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev \
+  gstreamer1.0-plugins-bad gstreamer1.0-libav
+```
+
+Windows needs WebView2 for the desktop interface and embedded Android playback.
+NSIS is required when building Windows installers. Run `make doctor` to check
+the local Wails prerequisites.
+
 From the project root:
 
 ```sh
-npm --prefix frontend install
+npm --prefix frontend ci
 make dev
 ```
 
@@ -241,9 +270,17 @@ require the desktop app.
 
 ```sh
 make check
+npm --prefix frontend test
+npm --prefix frontend run build
 go test ./...
 make build
 ```
+
+`make check` checks Svelte and TypeScript. The frontend tests cover media-player
+behavior, timestamps, and theme handling. Build the frontend before Go tests:
+the desktop entry point embeds `frontend/dist`, and UI integration tests serve
+those built assets. `go test ./...` covers the application and runtime-bundle
+tooling; browser, live-emulator, download, and keyring checks are opt-in.
 
 `make build` creates the desktop executable for the host platform. Use the
 package commands below to create installers.
@@ -387,7 +424,8 @@ sudo apt install --reinstall ./bin/isolate-bundled-tools.deb
 Install native build dependencies once:
 
 ```sh
-sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
+sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev \
+  gstreamer1.0-plugins-bad gstreamer1.0-libav
 ```
 
 Close Isolate, then rebuild and install the standard edition over the existing
@@ -410,8 +448,8 @@ in the previous version, select **Retry setup** to reuse completed downloads.
 Reinstalling preserves user profiles; do not remove their data directory.
 When upgrading from SessionSplit, APT replaces the old `sessionsplit` package.
 Local builds on Ubuntu 26.04 use that system's libraries and may not run on older
-Ubuntu releases. The DEB declares GTK4 and WebKitGTK 6.0 runtime dependencies for
-APT to install.
+Ubuntu releases. The DEB declares GTK4, WebKitGTK 6.0, and GStreamer H.264/AAC
+playback dependencies for APT to install.
 
 #### Other build environments
 
@@ -429,10 +467,50 @@ if artifact storage is full, files are attached to a draft release instead.
 See the Wails v3 [Windows packaging](https://v3.wails.io/guides/build/windows/)
 and [Linux packaging](https://v3.wails.io/guides/build/linux/) documentation.
 
+## Project structure
+
+| Path | Purpose |
+| --- | --- |
+| `main.go` | Desktop window, embedded frontend, and Wails service registration |
+| `profiles.go`, `settings.go`, `profile_storage.go` | Profile lifecycle, settings, and storage migration |
+| `engine.go`, `browser_catalog.go`, `firefox.go` | Installed-browser discovery and Chromium/Firefox integration |
+| `proxy.go`, `profile_network.go`, `credentials.go` | Proxy routing, connection diagnostics, and keyring credentials |
+| `android_setup*.go`, `android_runtime_bundle.go` | Guided runtime setup, licenses, downloads, and bundled-tool discovery |
+| `android_workspace.go`, `android_diagnostics.go` | Emulator lifecycle, device input, display configuration, and logs |
+| `android_scrcpy.go`, `android_media.go` | Screen transport and fragmented MP4 video/audio |
+| `frontend/src/` | Svelte interface, Android media player, themes, and styles |
+| `frontend/bindings/` | Wails-generated TypeScript service bindings |
+| `frontend/tests/`, `*_test.go` | Frontend tests and Go unit/integration tests |
+| `build/`, `internal/runtimebundle/` | Platform packaging, runtime manifests, and bundle preparation |
+| `.github/workflows/` | Manually triggered Windows installer and Ubuntu DEB builds |
+
+For more detail, see [Android runtime and validation](docs/ANDROID_RUNTIME.md),
+[browser privacy and networking](BROWSER_PRIVACY.md),
+[Windows builds](WINDOWS_BUILDS.md), [product scope](PRODUCT.md), and
+[design notes](DESIGN.md). [TODO.md](TODO.md) tracks remaining release work;
+[project history](docs/PROJECT_HISTORY.md) records earlier implementation work.
+
 ## Testing and design notes
 
-Run the profile tests with `go test ./...`. Run Chrome integration and UI checks
-with `ISOLATE_BROWSER_TESTS=1 go test -v .` after building the frontend.
+After the standard checks above, enable integration suites as needed:
+
+```sh
+# Installed-browser integration and profile UI (Chrome required for UI checks).
+ISOLATE_BROWSER_TESTS=1 go test -v .
+
+# Android setup and screen-wall UI, using Chrome and the built frontend.
+ISOLATE_ANDROID_SETUP_UI_TESTS=1 ISOLATE_ANDROID_SCREEN_UI_TESTS=1 go test -run 'TestAndroid(Setup|Screen)' -v .
+
+# Actual desktop credential store; requires an available, unlocked keyring.
+ISOLATE_KEYRING_TESTS=1 go test -run TestOSCredentialStoreRoundTrip -v .
+```
+
+Android encoded-media, native WebKitGTK, runtime-download, and live-device checks
+have separate prerequisites and switches documented in
+[Android validation](docs/ANDROID_RUNTIME.md#validation). FFmpeg and FFprobe are
+needed for generated-media tests, but are not application runtime dependencies.
+Live screen connections configure the emulator's display and gesture navigation;
+use a test virtual phone for live checks.
 
 The sun/moon button beside the window controls switches between light and dark
 mode. The initial theme follows your system preference; explicit choices are
