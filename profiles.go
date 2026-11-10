@@ -35,6 +35,9 @@ type profileBrowser struct {
 	cancel     context.CancelFunc
 	proxyClose func()
 	firefox    *firefoxBrowser
+	liveView   bool
+	liveMu     sync.Mutex
+	liveTarget proto.TargetTargetID
 }
 
 type ProfileService struct {
@@ -321,6 +324,10 @@ func (s *ProfileService) recordProfileOpened(id string) (BrowserProfile, error) 
 
 // openProfile is called with mu held; timestamps are committed by OpenProfile.
 func (s *ProfileService) openProfile(ctx context.Context, id string) error {
+	return s.openProfileInMode(ctx, id, false)
+}
+
+func (s *ProfileService) openProfileInMode(ctx context.Context, id string, liveView bool) error {
 	if s.closed {
 		return errors.New("Isolate is closing")
 	}
@@ -340,6 +347,9 @@ func (s *ProfileService) openProfile(ctx context.Context, id string) error {
 		return err
 	}
 	if live := s.browsers[id]; live != nil {
+		if live.liveView != liveView {
+			return errors.New("Close this profile before switching between live and external views")
+		}
 		if err := live.activate(ctx); err == nil {
 			return nil
 		}
@@ -367,7 +377,7 @@ func (s *ProfileService) openProfile(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	live, err := engine.Launch(ctx, launchConfig{Profile: profile, Settings: profile.Settings, Root: s.root, ProxyURL: proxyURL, Headless: s.headless, OnError: func(err error) {
+	live, err := engine.Launch(ctx, launchConfig{Profile: profile, Settings: profile.Settings, Root: s.root, ProxyURL: proxyURL, Headless: s.headless || liveView, DisableSandbox: s.headless, OnError: func(err error) {
 		log.Printf("Could not apply browser settings for profile %s; affected page closed: %v", profile.ID, err)
 	}})
 	if err != nil {
@@ -375,6 +385,7 @@ func (s *ProfileService) openProfile(ctx context.Context, id string) error {
 		return err
 	}
 	live.proxyClose = closeProxy
+	live.liveView = liveView
 	s.browsers[id] = live
 	if err := live.activate(ctx); err != nil {
 		live.cancel()
@@ -398,7 +409,7 @@ func activateProfileBrowser(ctx context.Context, browser *rod.Browser) error {
 			return (proto.TargetActivateTarget{TargetID: target.TargetID}).Call(client)
 		}
 	}
-	_, err = (proto.TargetCreateTarget{URL: "https://www.instagram.com/"}).Call(client)
+	_, err = (proto.TargetCreateTarget{URL: "https://google.com/"}).Call(client)
 	return err
 }
 

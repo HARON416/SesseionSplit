@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"hash/fnv"
 	"net/http"
@@ -48,6 +49,11 @@ func TestProfilesUI(t *testing.T) {
 	if os.Getenv("ISOLATE_BROWSER_TESTS") != "1" {
 		t.Skip("set ISOLATE_BROWSER_TESTS=1 to run browser integration")
 	}
+	frameBytes, err := os.ReadFile("build/appicon.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+	frameImage := "data:image/png;base64," + base64.StdEncoding.EncodeToString(frameBytes)
 	service, err := newProfileService(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -61,6 +67,7 @@ func TestProfilesUI(t *testing.T) {
 	}
 	var opened atomic.Value
 	opened.Store("")
+	var normalOpens, liveOpens atomic.Int32
 	var failOpen atomic.Bool
 	var failDelete atomic.Bool
 	var failRename atomic.Bool
@@ -68,6 +75,9 @@ func TestProfilesUI(t *testing.T) {
 	var settingsRunning atomic.Bool
 	var connectionTests atomic.Int32
 	var testedConnection atomic.Value
+	var liveSessions sync.Map
+	var lastLiveInput atomic.Value
+	lastLiveInput.Store(LiveInput{})
 	files := http.FileServer(http.Dir("frontend/dist"))
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/wails/runtime" {
@@ -89,6 +99,20 @@ func TestProfilesUI(t *testing.T) {
 		switch call.Args.MethodID {
 		case methodID("ListProfiles"):
 			result = service.ListProfiles()
+		case methodID("ListLiveProfiles"):
+			ids := []string{}
+			liveSessions.Range(func(key, value any) bool { ids = append(ids, key.(string)); return true })
+			result = ids
+		case methodID("GetLiveFrame"):
+			result = LiveFrame{Image: frameImage, URL: "https://www.instagram.com/", Title: "Instagram test page", Width: liveWidth, Height: liveHeight}
+		case methodID("SendLiveInput"):
+			var input LiveInput
+			if len(call.Args.Args) != 2 || json.Unmarshal(call.Args.Args[1], &input) != nil {
+				http.Error(w, "invalid input", 400)
+				return
+			}
+			callErr = validateLiveInput(input)
+			lastLiveInput.Store(input)
 		case methodID("ListBrowserEngines"):
 			engines := []EngineInfo{}
 			for _, browser := range browserCatalog {
@@ -111,6 +135,7 @@ func TestProfilesUI(t *testing.T) {
 				result = state
 			case methodID("CloseProfile"):
 				settingsRunning.Store(false)
+				liveSessions.Delete(id)
 			case methodID("TestProfileConnection"):
 				var update SettingsUpdate
 				if len(call.Args.Args) != 2 || json.Unmarshal(call.Args.Args[1], &update) != nil {
@@ -173,7 +198,7 @@ func TestProfilesUI(t *testing.T) {
 			}
 			callErr = service.DeleteProfile(id)
 
-		case methodID("OpenProfile"):
+		case methodID("OpenProfile"), methodID("OpenLiveProfile"):
 			var id string
 			if len(call.Args.Args) != 1 || json.Unmarshal(call.Args.Args[0], &id) != nil {
 				http.Error(w, "invalid ID", 400)
@@ -183,6 +208,12 @@ func TestProfilesUI(t *testing.T) {
 			if failOpen.Load() {
 				http.Error(w, "exec /private/storage/browser: process exited with code 17", 500)
 				return
+			}
+			if call.Args.MethodID == methodID("OpenLiveProfile") {
+				liveOpens.Add(1)
+				liveSessions.Store(id, true)
+			} else {
+				normalOpens.Add(1)
 			}
 			service.mu.Lock()
 			result, callErr = service.recordProfileOpened(id)
@@ -212,7 +243,9 @@ func TestProfilesUI(t *testing.T) {
 	defer l.Cleanup()
 	browser := rod.New().ControlURL(control).Context(ctx).MustConnect()
 	defer browser.Close()
-	page := browser.MustPage(server.URL)
+	page := browser.MustPage()
+	page.MustEvalOnNewDocument(`localStorage.setItem('isolate-workspace', 'browser')`)
+	page.MustNavigate(server.URL)
 	page.MustWaitLoad()
 	wait := func(js string) {
 		t.Helper()
@@ -291,6 +324,12 @@ func TestProfilesUI(t *testing.T) {
 	wait(`() => [...document.querySelectorAll('.last-opened')].every(node => node.textContent.includes('Not recorded'))`)
 	page.MustElement(".open-profile").MustClick()
 	wait(`() => !document.querySelector('.open-profile').disabled && !!document.querySelector('.last-opened time')`)
+	if page.MustEval(`() => !!document.querySelector('.external-profile, .live-workspace, .live-preview')`).Bool() {
+		t.Fatal("profiles must open directly in a normal browser without external/live controls")
+	}
+	if liveOpens.Load() != 0 || normalOpens.Load() != 1 {
+		t.Fatal("Open must use the normal browser launch", normalOpens.Load(), liveOpens.Load())
+	}
 	recorded := service.ListProfiles()[0].LastOpenedAt
 	if page.MustElement(".last-opened time").MustAttribute("datetime") == nil || *page.MustElement(".last-opened time").MustAttribute("datetime") != recorded {
 		t.Fatal("card did not show the saved last-open time")
@@ -325,7 +364,7 @@ func TestProfilesUI(t *testing.T) {
 	page.MustWaitLoad()
 	wait(`() => document.querySelector('.last-opened time')?.getAttribute('datetime')===` + strconv.Quote(recorded))
 	// Card actions follow the same primary-first order visually and on the keyboard.
-	wait(`() => [...document.querySelector('.profile-card').querySelectorAll('button')].map(b => b.classList.contains('open-profile') ? 'open' : b.classList.contains('edit-profile') ? 'edit' : b.classList.contains('settings-profile') ? 'settings' : b.classList.contains('delete-profile') ? 'delete' : '').join(',')==='open,edit,settings,delete'`)
+	wait(`() => [...document.querySelector('.profile-card').querySelectorAll('.profile-card-actions button')].map(b => b.classList.contains('open-profile') ? 'open' : b.classList.contains('edit-profile') ? 'edit' : b.classList.contains('settings-profile') ? 'settings' : b.classList.contains('delete-profile') ? 'delete' : '').join(',')==='open,edit,settings,delete'`)
 	page.MustElement(".open-profile").MustFocus()
 	page.Keyboard.MustType(input.Tab)
 	wait(`() => document.activeElement.classList.contains('edit-profile')`)

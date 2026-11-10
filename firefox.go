@@ -304,7 +304,7 @@ func (browser *firefoxBrowser) activate(ctx context.Context) error {
 	}
 	selected := tree.Contexts[0]
 	if selected.URL == "about:blank" {
-		if err := browser.call(ctx, "browsingContext.navigate", map[string]any{"context": selected.Context, "url": "https://www.instagram.com/", "wait": "none"}, nil); err != nil {
+		if err := browser.call(ctx, "browsingContext.navigate", map[string]any{"context": selected.Context, "url": "https://google.com/", "wait": "none"}, nil); err != nil {
 			return err
 		}
 	}

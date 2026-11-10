@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([ValidateSet('standard', 'bundled-tools')][string]$InstallerFlavor = 'standard')
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -42,17 +42,25 @@ try {
     $binary = (Resolve-Path -LiteralPath (Join-Path (Join-Path $root 'bin') 'isolate.exe')).Path
     if ((Get-Item -LiteralPath $binary).Length -eq 0) { throw 'The application executable is empty.' }
 
+    $bundleArgument = @()
+    $installerName = 'isolate-amd64-installer.exe'
+    if ($InstallerFlavor -eq 'bundled-tools') {
+        Invoke-Checked go @('run', './build/runtime-bundle', '-out', '.tools/runtime/windows-amd64')
+        $bundle = (Resolve-Path -LiteralPath '.tools/runtime/windows-amd64').Path
+        $bundleArgument = @("/DISOLATE_RUNTIME_BUNDLE=$bundle")
+        $installerName = 'isolate-amd64-bundled-tools-installer.exe'
+    }
     $nsis = Join-Path $root 'build/windows/nsis'
     Invoke-Checked $wails @('generate', 'webview2bootstrapper', '-dir', $nsis)
     Push-Location $nsis
     try {
-        Invoke-Checked makensis @('/DINFO_PROJECTNAME=isolate', '/DINFO_PRODUCTNAME=Isolate', '/DINFO_COMPANYNAME=Isolate', '/DPRODUCT_EXECUTABLE=isolate.exe', '/DWAILS_INSTALL_SCOPE=user', '/DREQUEST_EXECUTION_LEVEL=user', "/DARG_WAILS_AMD64_BINARY=$binary", 'project.nsi')
+        Invoke-Checked makensis ($bundleArgument + @('/DINFO_PROJECTNAME=isolate', '/DINFO_PRODUCTNAME=Isolate', '/DINFO_COMPANYNAME=Isolate', '/DPRODUCT_EXECUTABLE=isolate.exe', '/DWAILS_INSTALL_SCOPE=user', '/DREQUEST_EXECUTION_LEVEL=user', "/DARG_WAILS_AMD64_BINARY=$binary", 'project.nsi'))
     } finally { Pop-Location }
 
-    $installer = Join-Path $root 'bin/isolate-amd64-installer.exe'
+    $installer = Join-Path (Join-Path $root 'bin') $installerName
     if (-not (Test-Path $installer)) { throw 'NSIS did not produce the expected installer.' }
     $hash = (Get-FileHash -Algorithm SHA256 $installer).Hash.ToLowerInvariant()
-    "$hash  isolate-amd64-installer.exe" | Set-Content -Encoding ascii bin/SHA256SUMS.txt
+    "$hash  $installerName" | Set-Content -Encoding ascii bin/SHA256SUMS.txt
     $commit = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0) { throw 'Cannot record application source revision.' }
     @{
@@ -60,6 +68,8 @@ try {
         source_revision = $commit
         built_at = [DateTime]::UtcNow.ToString('o')
         target = 'windows/amd64'
+        installer_flavor = $InstallerFlavor
+        android_download_required = $true
         wails_version = $version
         installer_sha256 = $hash
         signed = $false

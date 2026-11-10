@@ -72,7 +72,11 @@ ManifestDPIAware true
 #!finalize 'signtool --file "%1"'
 
 Name "${INFO_PRODUCTNAME}"
-OutFile "..\..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
+!ifdef ISOLATE_RUNTIME_BUNDLE
+OutFile "..\..\..\bin\${INFO_PROJECTNAME}-${ARCH}-bundled-tools-installer.exe"
+!else
+OutFile "..\..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe"
+!endif
 !if "${WAILS_INSTALL_SCOPE}" == "user"
     InstallDir "$LOCALAPPDATA\Programs\${INFO_PRODUCTNAME}"
 !else
@@ -92,6 +96,18 @@ Section
     SetOutPath $INSTDIR
     
     !insertmacro wails.files
+
+    !ifdef ISOLATE_RUNTIME_BUNDLE
+        DetailPrint "Installing bundled Java and streaming tools (Android files download during first setup)"
+        SetOutPath "$INSTDIR\runtime"
+        File "${ISOLATE_RUNTIME_BUNDLE}/manifest.json"
+        File "${ISOLATE_RUNTIME_BUNDLE}/java.zip"
+        File "${ISOLATE_RUNTIME_BUNDLE}/java-sources.tar.gz"
+        File "${ISOLATE_RUNTIME_BUNDLE}/scrcpy-server-v5.0.1"
+        File "${ISOLATE_RUNTIME_BUNDLE}/scrcpy-sources.tar.gz"
+        File "${ISOLATE_RUNTIME_BUNDLE}/THIRD_PARTY_NOTICES.txt"
+        SetOutPath $INSTDIR
+    !endif
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"

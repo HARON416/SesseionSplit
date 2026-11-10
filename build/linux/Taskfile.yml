@@ -100,22 +100,37 @@ tasks:
         sh: 'wails3 tool docker-mounts'
 
   package:
-    summary: Packages the application as an Ubuntu DEB only
+    summary: Packages the standard or bundled-tools Ubuntu DEB
     cmds:
       - task: create:deb
+        vars:
+          INSTALLER_FLAVOR: '{{.INSTALLER_FLAVOR | default "standard"}}'
 
   create:deb:
     summary: Creates a deb package
     deps:
       - task: build
+    preconditions:
+      - sh: '[ "{{.INSTALLER_FLAVOR}}" = "standard" ] || [ "{{.INSTALLER_FLAVOR}}" = "bundled-tools" ]'
+        msg: "INSTALLER_FLAVOR must be standard or bundled-tools"
+      - sh: '[ "{{.INSTALLER_FLAVOR}}" != "bundled-tools" ] || [ "{{.ARCH}}" = "amd64" ]'
+        msg: "Bundled tools currently support Linux amd64 only"
     cmds:
       - task: generate:dotdesktop
       - task: generate:deb
+        vars:
+          INSTALLER_FLAVOR: '{{.INSTALLER_FLAVOR}}'
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+      INSTALLER_FLAVOR: '{{.INSTALLER_FLAVOR | default "standard"}}'
 
   generate:deb:
-    summary: Creates a deb package
+    summary: Creates a standard or bundled-tools deb package
     cmds:
-      - wails3 tool package -name "{{.APP_NAME}}" -format deb -config ./build/linux/nfpm/nfpm.yaml -out {{.ROOT_DIR}}/bin
+      - '{{if eq .INSTALLER_FLAVOR "bundled-tools"}}go run ./build/runtime-bundle -target linux/amd64 -verify -out .tools/runtime/linux-amd64 -deb-config ./build/linux/nfpm/nfpm.yaml{{else}}echo Building standard Ubuntu DEB{{end}}'
+      - wails3 tool package -name "{{.APP_NAME}}{{if eq .INSTALLER_FLAVOR "bundled-tools"}}-bundled-tools{{end}}" -format deb -config {{if eq .INSTALLER_FLAVOR "bundled-tools"}}./.tools/runtime/linux-amd64/nfpm-bundled.yaml{{else}}./build/linux/nfpm/nfpm.yaml{{end}} -out {{.ROOT_DIR}}/bin
+    vars:
+      INSTALLER_FLAVOR: '{{.INSTALLER_FLAVOR | default "standard"}}'
     env:
       GOARCH: '{{.ARCH | default ARCH}}'
 

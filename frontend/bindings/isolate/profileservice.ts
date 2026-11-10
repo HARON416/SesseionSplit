@@ -28,6 +28,10 @@ export function DeleteProfile(id: string): $CancellablePromise<void> {
     return $Call.ByID(2886510544, id);
 }
 
+export function GetLiveFrame(id: string, preview: boolean): $CancellablePromise<$models.LiveFrame> {
+    return $Call.ByID(716088675, id, preview);
+}
+
 export function GetProfileSettings(id: string): $CancellablePromise<$models.ProfileSettingsState> {
     return $Call.ByID(3128382456, id);
 }
@@ -36,8 +40,16 @@ export function ListBrowserEngines(): $CancellablePromise<$models.EngineInfo[] |
     return $Call.ByID(427443623);
 }
 
+export function ListLiveProfiles(): $CancellablePromise<string[] | null> {
+    return $Call.ByID(1400143384);
+}
+
 export function ListProfiles(): $CancellablePromise<$models.BrowserProfile[] | null> {
     return $Call.ByID(999654254);
+}
+
+export function OpenLiveProfile(id: string): $CancellablePromise<$models.BrowserProfile> {
+    return $Call.ByID(81583891, id);
 }
 
 export function OpenProfile(id: string): $CancellablePromise<$models.BrowserProfile> {
@@ -46,6 +58,10 @@ export function OpenProfile(id: string): $CancellablePromise<$models.BrowserProf
 
 export function RenameProfile(id: string, name: string): $CancellablePromise<$models.BrowserProfile> {
     return $Call.ByID(488632539, id, name);
+}
+
+export function SendLiveInput(id: string, input: $models.LiveInput): $CancellablePromise<void> {
+    return $Call.ByID(2111381300, id, input);
 }
 
 /**

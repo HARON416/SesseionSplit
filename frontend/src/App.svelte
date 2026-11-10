@@ -7,6 +7,7 @@
   import ProfileSettings from './ProfileSettings.svelte';
   import BrowserLogo from './BrowserLogo.svelte';
   import EmptyWorkspace from './EmptyWorkspace.svelte';
+  import AndroidWall from './AndroidWall.svelte';
   import { formatCreatedDate, formatExactTimestamp, formatLastOpened, formatTime } from './timestamps';
   let now = $state(Date.now());
   let controls: WindowControls;
@@ -34,6 +35,12 @@
   let profileToDelete = $state<BrowserProfile | null>(null);
   let deleting = $state(false);
   let deleteError = $state('');
+  let workspace = $state<'android' | 'browser'>('android');
+
+  function changeWorkspace(value: 'android' | 'browser') {
+    workspace = value;
+    try { localStorage.setItem('isolate-workspace', value); } catch {}
+  }
 
   function profileFailure(error: unknown, action: 'create' | 'rename' | 'open' | 'delete') {
     console.error(`Profile ${action} failed`, error);
@@ -42,6 +49,7 @@
     if (detail.includes('Enter a profile name')) return 'Enter a profile name.';
     if (detail.includes('Isolate is closing')) return 'Isolate is closing. Reopen the app to try again.';
     if (detail.includes('Profile was not found')) return 'This profile is no longer available. Restart Isolate to refresh the list.';
+    if (detail.includes('Close this profile before switching between live and external views')) return 'Close this profile’s browser from Settings, then open it again.';
     if (detail.includes('Close this profile browser before changing browsers')) return 'Close this profile’s browser before changing it. You can close it from Settings, then try again.';
     if (detail.includes('Choose a supported browser')) return 'Choose a supported browser.';
     if (detail.includes('Install Chrome or Chromium')) return 'Install Chrome or Chromium, then try opening the profile again.';
@@ -58,6 +66,7 @@
   }
 
   onMount(() => {
+    try { if (localStorage.getItem('isolate-workspace') === 'browser') workspace = 'browser'; } catch {}
     const refreshTime = () => { now = Date.now(); };
     const clock = window.setInterval(refreshTime, 1000);
     window.addEventListener('focus', refreshTime);
@@ -68,7 +77,7 @@
     const handleShortcut = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'n') {
         event.preventDefault();
-        if (!event.repeat && !loading && !document.querySelector('dialog[open]')) openProfileDialog();
+        if (workspace === 'browser' && !event.repeat && !loading && !document.querySelector('dialog[open]')) openProfileDialog();
       }
     };
     window.addEventListener('keydown', handleShortcut);
@@ -169,6 +178,7 @@
       openingIDs = openingIDs.filter((id) => id !== profile.id);
     }
   }
+
   async function requestDelete(profile: BrowserProfile) {
     profileToDelete = profile;
     deleteError = '';
@@ -202,17 +212,25 @@
 <div class="app-shell">
   <header class="title-bar">
     <div class="profile-actions">
+      <nav class="workspace-switch" aria-label="Workspaces">
+        <button type="button" aria-label="Android screens workspace" aria-pressed={workspace === 'android'} onclick={() => changeWorkspace('android')}>Android</button>
+        <button type="button" aria-label="Browser profiles workspace" aria-pressed={workspace === 'browser'} onclick={() => changeWorkspace('browser')}>Profiles</button>
+      </nav>
+      {#if workspace === 'browser'}
       <button class="add-profile" type="button" disabled={loading} title="Add new profile (Ctrl+N / ⌘N)" aria-keyshortcuts="Control+n Meta+n" onclick={openProfileDialog}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         Add new profile
       </button>
+      {/if}
     </div>
     <div class="window-caption" role="presentation" ondblclick={() => controls?.toggleMaximise()}></div>
     <ThemeToggle />
     <WindowControls bind:this={controls} onerror={(error) => message = error} />
   </header>
-  <main class:workspace-empty={!loading && !profiles.length && !loadFailed} aria-label="Profile workspace" aria-busy={loading}>
-    {#if loading}
+  <main class:workspace-empty={workspace === 'browser' && !loading && !profiles.length && !loadFailed} aria-label={workspace === 'android' ? 'Android workspace' : 'Profile workspace'} aria-busy={workspace === 'browser' && loading}>
+    {#if workspace === 'android'}
+      <AndroidWall />
+    {:else if loading}
       <p class="loading" role="status">Loading profiles…</p>
     {:else if profiles.length}
       <div class="profile-grid">
@@ -329,6 +347,9 @@
   .app-shell { display: flex; flex-direction: column; height: 100%; border: 2px solid var(--accent); }
   .title-bar { display: flex; flex: 0 0 48px; min-width: 0; background: var(--surface); border-bottom: 1px solid var(--border); user-select: none; }
   .profile-actions { --wails-draggable: no-drag; display: flex; align-items: center; padding: 0 10px; }
+  .workspace-switch { display: flex; gap: 4px; margin-right: 8px; }
+  .workspace-switch button { padding: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); font: inherit; font-size: 11px; cursor: pointer; }
+  .workspace-switch button[aria-pressed='true'] { color: var(--text); background: var(--surface-hover); border-color: var(--text-secondary); }
   .add-profile { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 12px; border: 1px solid var(--border); border-radius: 0; background: var(--surface); color: var(--text); font-size: 13px; font-weight: 550; white-space: nowrap; cursor: pointer; }
   .add-profile:hover { background: var(--surface-hover); }
   .add-profile:active { background: var(--surface-active); }

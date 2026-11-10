@@ -130,7 +130,7 @@ func TestEngineEnvironmentFirstScriptsAndNewTabs(t *testing.T) {
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 			defer cancel()
-			cfg := launchConfig{Profile: BrowserProfile{ID: strings.Repeat("a", 32)}, Root: t.TempDir(), Headless: true,
+			cfg := launchConfig{Profile: BrowserProfile{ID: strings.Repeat("a", 32)}, Root: t.TempDir(), Headless: true, DisableSandbox: true,
 				Settings: ProfileSettings{Engine: engineID, BrowserPath: override, Language: "fr-FR", Timezone: "Pacific/Honolulu", Permissions: "block", Width: 800, Height: 600}}
 			for restart := 0; restart < 2; restart++ {
 				func() {
@@ -197,6 +197,10 @@ func TestEngineEnvironmentFirstScriptsAndNewTabs(t *testing.T) {
 }
 
 func TestEngineLaunchPolicyAndStoragePaths(t *testing.T) {
+	liveLauncher := newEngineLauncher(context.Background(), "/test/browser", launchConfig{Headless: true}, "/test/data", "/test/cache", 9222)
+	if !liveLauncher.Has("headless") || liveLauncher.Has("no-sandbox") {
+		t.Fatal("live view must stay headless without disabling the browser sandbox")
+	}
 	for _, engine := range []string{"chrome", "brave"} {
 		data, cache, downloads := engineProfilePaths("/root", "profile-id", engine)
 		if strings.Contains(downloads, "brave") {
@@ -281,7 +285,7 @@ func TestEngineAuthenticatedProxyRoutesBrowserTraffic(t *testing.T) {
 			defer closeProxy()
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
-			live, err := engine.Launch(ctx, launchConfig{Profile: BrowserProfile{ID: strings.Repeat("b", 32)}, Settings: ProfileSettings{Engine: id, BrowserPath: override}, Root: t.TempDir(), Headless: true, ProxyURL: bridge})
+			live, err := engine.Launch(ctx, launchConfig{Profile: BrowserProfile{ID: strings.Repeat("b", 32)}, Settings: ProfileSettings{Engine: id, BrowserPath: override}, Root: t.TempDir(), Headless: true, DisableSandbox: true, ProxyURL: bridge})
 			if err != nil {
 				t.Fatal(err)
 			}

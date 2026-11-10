@@ -33,12 +33,13 @@ type browserEngine interface {
 }
 
 type launchConfig struct {
-	Profile  BrowserProfile
-	Settings ProfileSettings
-	Root     string
-	ProxyURL string
-	Headless bool
-	OnError  func(error)
+	Profile        BrowserProfile
+	Settings       ProfileSettings
+	Root           string
+	ProxyURL       string
+	Headless       bool
+	DisableSandbox bool
+	OnError        func(error)
 }
 
 type chromiumEngine struct {
@@ -315,7 +316,7 @@ func newEngineLauncher(browserCtx context.Context, path string, cfg launchConfig
 		UserDataDir(dir).RemoteDebuggingPort(port).Set("remote-debugging-address", "127.0.0.1").
 		Set("disk-cache-dir", cacheDir).Set("disable-sync").Set("disable-notifications").Set("no-startup-window")
 	// Only the explicit integration-test mode disables the OS sandbox.
-	l.NoSandbox(cfg.Headless)
+	l.NoSandbox(cfg.DisableSandbox)
 	if cfg.ProxyURL == "" {
 		l.Set("no-proxy-server")
 	} else {

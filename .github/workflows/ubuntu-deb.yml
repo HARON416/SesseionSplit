@@ -2,6 +2,12 @@ name: Ubuntu DEB
 
 on:
   workflow_dispatch:
+    inputs:
+      installer_flavor:
+        description: 'DEB edition (Android downloads required for both)'
+        type: choice
+        options: [standard, bundled-tools]
+        default: standard
 
 permissions:
   contents: read
@@ -41,12 +47,17 @@ jobs:
           test -n "$version"
           go install "github.com/wailsapp/wails/v3/cmd/wails3@$version"
       - name: Check and package
+        env:
+          INSTALLER_FLAVOR: ${{ inputs.installer_flavor }}
         run: |
           npm --prefix frontend ci
           npm --prefix frontend run check
           npm --prefix frontend test
           go test ./...
-          wails3 package GOOS=linux ARCH=amd64
+          if [ "$INSTALLER_FLAVOR" = "bundled-tools" ]; then
+            go run ./build/runtime-bundle -target linux/amd64 -out .tools/runtime/linux-amd64
+          fi
+          wails3 package GOOS=linux ARCH=amd64 INSTALLER_FLAVOR="$INSTALLER_FLAVOR"
           dpkg-deb --info bin/*.deb
           dpkg-deb --contents bin/*.deb
           cd bin

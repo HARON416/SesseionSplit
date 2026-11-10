@@ -31,6 +31,10 @@ contents:
 depends:
   - libgtk-4-1
   - libwebkitgtk-6.0-4
+  - libc6 (>= 2.38)
+  # H.264 parser and H.264/AAC decoders for embedded Android video/audio.
+  - gstreamer1.0-plugins-bad
+  - gstreamer1.0-libav
 
 # scripts section to ensure desktop database is updated after install
 scripts:

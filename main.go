@@ -21,7 +21,7 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Isolate",
 		Icon:        appIcon,
-		Services:    []application.Service{application.NewService(profiles)},
+		Services:    []application.Service{application.NewService(profiles), application.NewService(newAndroidService())},
 		Description: "Isolate desktop application",
 		Assets:      application.AssetOptions{Handler: application.AssetFileServerFS(assets)},
 		Linux:       application.LinuxOptions{ApplicationID: "app.isolate.desktop", ProgramName: "isolate"},
